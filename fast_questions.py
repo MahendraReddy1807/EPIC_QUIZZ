@@ -30,15 +30,25 @@ def get_mahabharata_questions_from_list():
         {"q": "What was the capital of Hastinapura?", "tq": "హస్తినాపురం ఎక్కడ ఉంది?", "o": ["Kuru Kingdom", "Panchala", "Matsya", "Magadha"], "to": ["కురు రాజ్యం", "పాంచాల", "మత్స్య", "మగధ"], "c": 0, "d": "easy"}
     ]
     
-    # Add more easy questions to reach 33
-    for i in range(13):
-        mahabharata_questions.append({
-            "q": f"Easy Mahabharata question {i+21}?",
-            "tq": f"సులభమైన మహాభారత ప్రశ్న {i+21}?",
-            "o": ["Option A", "Option B", "Option C", "Option D"],
-            "to": ["ఎంపిక A", "ఎంపిక B", "ఎంపిక C", "ఎంపిక D"],
-            "c": 0, "d": "easy"
-        })
+    # Add more authentic easy questions to reach 33
+    additional_easy = [
+        {"q": "Who was Shakuni's father?", "tq": "శకునుని తండ్రి ఎవరు?", "o": ["Subala", "Dhritarashtra", "Pandu", "Vidura"], "to": ["సుబల", "ధృతరాష్ట్రుడు", "పాండు", "విదురుడు"], "c": 0, "d": "easy"},
+        {"q": "What was Draupadi's birth name?", "tq": "ద్రౌపది జన్మ పేరు ఏమిటి?", "o": ["Krishnaa", "Panchali", "Yajnaseni", "All of these"], "to": ["కృష్ణా", "పాంచాలి", "యజ్ఞసేని", "ఇవన్నీ"], "c": 3, "d": "easy"},
+        {"q": "Who was the youngest Pandava?", "tq": "పాండవులలో చిన్నవాడు ఎవరు?", "o": ["Sahadeva", "Nakula", "Arjuna", "Bhima"], "to": ["సహదేవుడు", "నకులుడు", "అర్జునుడు", "భీముడు"], "c": 0, "d": "easy"},
+        {"q": "What was Bhishma's original name?", "tq": "భీష్ముని అసలు పేరు ఏమిటి?", "o": ["Devavrata", "Ganga", "Shantanu", "Satyavati"], "to": ["దేవవ్రతుడు", "గంగ", "శంతనుడు", "సత్యవతి"], "c": 0, "d": "easy"},
+        {"q": "Who was Duryodhana's wife?", "tq": "దుర్యోధనుని భార్య ఎవరు?", "o": ["Bhanumati", "Gandhari", "Kunti", "Madri"], "to": ["భానుమతి", "గాంధారి", "కుంతి", "మాద్రి"], "c": 0, "d": "easy"},
+        {"q": "What was the name of Karna's foster mother?", "tq": "కర్ణుని పెంపుడు తల్లి పేరు ఏమిటి?", "o": ["Radha", "Kunti", "Gandhari", "Madri"], "to": ["రాధ", "కుంతి", "గాంధారి", "మాద్రి"], "c": 0, "d": "easy"},
+        {"q": "Who was the king of Hastinapura before Dhritarashtra?", "tq": "ధృతరాష్ట్రుడికి ముందు హస్తినాపుర రాజు ఎవరు?", "o": ["Pandu", "Shantanu", "Vichitraveerya", "Bhishma"], "to": ["పాండు", "శంతనుడు", "విచిత్రవీర్యుడు", "భీష్ముడు"], "c": 0, "d": "easy"},
+        {"q": "What was Arjuna's son's name?", "tq": "అర్జునుని కొడుకు పేరు ఏమిటి?", "o": ["Abhimanyu", "Ghatotkacha", "Prativindhya", "Sutasoma"], "to": ["అభిమన్యుడు", "ఘటోత్కచుడు", "ప్రతివింధ్యుడు", "సుతసోముడు"], "c": 0, "d": "easy"},
+        {"q": "Who was Vidura's mother?", "tq": "విదురుని తల్లి ఎవరు?", "o": ["Parishrami", "Ambika", "Ambalika", "Satyavati"], "to": ["పరిశ్రామి", "అంబిక", "అంబాలిక", "సత్యవతి"], "c": 0, "d": "easy"},
+        {"q": "What was the name of Hastinapura's royal priest?", "tq": "హస్తినాపుర రాజ పురోహితుడు పేరు ఏమిటి?", "o": ["Kripacharya", "Dronacharya", "Bharadwaja", "Gautama"], "to": ["కృపాచార్యుడు", "ద్రోణాచార్యుడు", "భరద్వాజ", "గౌతమ"], "c": 0, "d": "easy"},
+        {"q": "Who was Ghatotkacha's father?", "tq": "ఘటోత్కచుని తండ్రి ఎవరు?", "o": ["Bhima", "Arjuna", "Yudhishthira", "Nakula"], "to": ["భీముడు", "అర్జునుడు", "యుధిష్ఠిరుడు", "నకులుడు"], "c": 0, "d": "easy"},
+        {"q": "What was the name of the dice game?", "tq": "పాచిక ఆట పేరు ఏమిటి?", "o": ["Dyuta", "Chaupar", "Pachisi", "Aksha"], "to": ["ద్యూత", "చౌపర్", "పచీసి", "అక్ష"], "c": 0, "d": "easy"},
+        {"q": "Who was the mother of Kauravas?", "tq": "కౌరవుల తల్లి ఎవరు?", "o": ["Gandhari", "Kunti", "Madri", "Satyavati"], "to": ["గాంధారి", "కుంతి", "మాద్రి", "సత్యవతి"], "c": 0, "d": "easy"}
+    ]
+    
+    for q_data in additional_easy:
+        mahabharata_questions.append(q_data)
     
     # MEDIUM QUESTIONS (34)
     medium_questions_data = [
@@ -179,15 +189,25 @@ def get_ramayana_questions_from_list():
         {"q": "Who was Lakshmana's mother?", "tq": "లక్ష్మణుని తల్లి ఎవరు?", "o": ["Sumitra", "Kausalya", "Kaikeyi", "Mandodari"], "to": ["సుమిత్ర", "కౌసల్య", "కైకేయి", "మందోదరి"], "c": 0, "d": "easy"}
     ]
     
-    # Add more easy questions to reach 33
-    for i in range(13):
-        ramayana_questions.append({
-            "q": f"Easy Ramayana question {i+21}?",
-            "tq": f"సులభ రామాయణ ప్రశ్న {i+21}?",
-            "o": ["Option A", "Option B", "Option C", "Option D"],
-            "to": ["ఎంపిక A", "ఎంపిక B", "ఎంపిక C", "ఎంపిక D"],
-            "c": 0, "d": "easy"
-        })
+    # Add more authentic easy questions to reach 33
+    additional_easy_ramayana = [
+        {"q": "What was the name of Ravana's son?", "tq": "రావణుని కొడుకు పేరు ఏమిటి?", "o": ["Indrajit", "Akshaya", "Narantaka", "All of these"], "to": ["ఇంద్రజిత్", "అక్షయుడు", "నరాంతక", "ఇవన్నీ"], "c": 3, "d": "easy"},
+        {"q": "Who was Shatrughna's mother?", "tq": "శత్రుఘ్నుని తల్లి ఎవరు?", "o": ["Sumitra", "Kausalya", "Kaikeyi", "Mandodari"], "to": ["సుమిత్ర", "కౌసల్య", "కైకేయి", "మందోదరి"], "c": 0, "d": "easy"},
+        {"q": "What was the name of Sita's sister?", "tq": "సీత చెల్లెలు పేరు ఏమిటి?", "o": ["Urmila", "Mandavi", "Shrutakirti", "None"], "to": ["ఊర్మిల", "మాండవి", "శ్రుతకీర్తి", "లేదు"], "c": 3, "d": "easy"},
+        {"q": "Who was the king of Ayodhya before Rama?", "tq": "రాముడికి ముందు అయోధ్య రాజు ఎవరు?", "o": ["Dasharatha", "Aja", "Raghu", "Dilipa"], "to": ["దశరథుడు", "అజ", "రఘు", "దిలీప"], "c": 0, "d": "easy"},
+        {"q": "What was Hanuman's other name?", "tq": "హనుమాన్ మరో పేరు ఏమిటి?", "o": ["Maruti", "Anjaneya", "Pavanaputra", "All of these"], "to": ["మారుతి", "ఆంజనేయ", "పవనపుత్ర", "ఇవన్నీ"], "c": 3, "d": "easy"},
+        {"q": "Who was Vali's wife?", "tq": "వాలి భార్య ఎవరు?", "o": ["Tara", "Ruma", "Anjana", "Mandodari"], "to": ["తార", "రుమ", "అంజన", "మందోదరి"], "c": 0, "d": "easy"},
+        {"q": "What was the name of Rama's guru?", "tq": "రాముని గురువు పేరు ఏమిటి?", "o": ["Vishwamitra", "Vasishta", "Bharadwaja", "Agastya"], "to": ["విశ్వామిత్రుడు", "వసిష్టుడు", "భరద్వాజ", "అగస్త్యుడు"], "c": 1, "d": "easy"},
+        {"q": "Who was the mother of Luv and Kush?", "tq": "లవ కుశుల తల్లి ఎవరు?", "o": ["Sita", "Urmila", "Mandavi", "Shrutakirti"], "to": ["సీత", "ఊర్మిల", "మాండవి", "శ్రుతకీర్తి"], "c": 0, "d": "easy"},
+        {"q": "What was the name of Ravana's flying chariot?", "tq": "రావణుని ఎగిరే రథం పేరు ఏమిటి?", "o": ["Pushpaka Vimana", "Garuda", "Hamsa", "Mayura"], "to": ["పుష్పక విమానం", "గరుడ", "హంస", "మయూర"], "c": 0, "d": "easy"},
+        {"q": "Who was the sage who wrote Ramayana?", "tq": "రామాయణం రాసిన ఋషి ఎవరు?", "o": ["Valmiki", "Vyasa", "Vishwamitra", "Vasishta"], "to": ["వాల్మీకి", "వ్యాసుడు", "విశ్వామిత్రుడు", "వసిష్టుడు"], "c": 0, "d": "easy"},
+        {"q": "What was the name of the golden deer?", "tq": "బంగారు జింక పేరు ఏమిటి?", "o": ["Maricha", "Subahu", "Tataka", "Khara"], "to": ["మారీచ", "సుబాహు", "తాటక", "ఖర"], "c": 0, "d": "easy"},
+        {"q": "Who was Kumbhakarna's brother?", "tq": "కుంభకర్ణుని సోదరుడు ఎవరు?", "o": ["Ravana", "Vibhishana", "Both A and B", "Indrajit"], "to": ["రావణుడు", "విభీషణుడు", "A మరియు B రెండూ", "ఇంద్రజిత్"], "c": 2, "d": "easy"},
+        {"q": "What was the name of Rama's dynasty?", "tq": "రాముని వంశం పేరు ఏమిటి?", "o": ["Ikshvaku", "Yadu", "Kuru", "Puru"], "to": ["ఇక్ష్వాకు", "యదు", "కురు", "పురు"], "c": 0, "d": "easy"}
+    ]
+    
+    for q_data in additional_easy_ramayana:
+        ramayana_questions.append(q_data)
     
     # MEDIUM QUESTIONS (34)
     medium_ramayana_data = [

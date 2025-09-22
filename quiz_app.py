@@ -213,15 +213,84 @@ def main():
         initial_sidebar_state="collapsed"  # Start with sidebar collapsed for faster load
     )
     
-    # Minimal CSS for faster loading
+    # Enhanced CSS for beautiful results visualization
     st.markdown("""
     <style>
     .score-card {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        padding: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        color: white;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        margin: 1rem 0;
+    }
+    .score-card h2 {
+        margin: 0;
+        font-size: 2.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    .score-card h3 {
+        margin: 0.5rem 0;
+        font-size: 2rem;
+        color: #FFD700;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .score-card p {
+        margin: 0.5rem 0 0 0;
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    .performance-excellent {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        padding: 1rem;
         border-radius: 10px;
         color: white;
         text-align: center;
+        margin: 1rem 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .performance-good {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 1rem;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        margin: 1rem 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .performance-improve {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        padding: 1rem;
+        border-radius: 10px;
+        color: white;
+        text-align: center;
+        margin: 1rem 0;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .stats-container {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin: 1rem 0;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    .stats-item {
+        display: inline-block;
+        margin: 0.5rem 1rem;
+        text-align: center;
+    }
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+        display: block;
+    }
+    .stats-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -420,22 +489,68 @@ def main():
                           score, total, st.session_state.language, timestamp, 
                           st.session_state.questions_used)
                 
-                # Display results - Interface in English
+                # Enhanced results display with beautiful visualizations
                 st.markdown(f'''
                 <div class="score-card">
                     <h2>🎉 Quiz Completed!</h2>
                     <h3>Score: {score}/{total} ({percentage}%)</h3>
-                    <p>Great job, {st.session_state.user_name}!</p>
+                    <p>Congratulations, {st.session_state.user_name}!</p>
                 </div>
                 ''', unsafe_allow_html=True)
                 
-                # Performance message - Always in English interface
+                # Beautiful statistics display
+                correct_answers = score
+                incorrect_answers = total - score
+                accuracy = percentage
+                
+                st.markdown(f'''
+                <div class="stats-container">
+                    <div style="text-align: center;">
+                        <h3 style="color: #2c3e50; margin-bottom: 1rem;">📊 Quiz Statistics</h3>
+                        <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                            <div class="stats-item">
+                                <span class="stats-number" style="color: #27ae60;">✅ {correct_answers}</span>
+                                <span class="stats-label">Correct</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-number" style="color: #e74c3c;">❌ {incorrect_answers}</span>
+                                <span class="stats-label">Incorrect</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-number" style="color: #3498db;">🎯 {accuracy}%</span>
+                                <span class="stats-label">Accuracy</span>
+                            </div>
+                            <div class="stats-item">
+                                <span class="stats-number" style="color: #9b59b6;">📚 {total}</span>
+                                <span class="stats-label">Total Questions</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ''', unsafe_allow_html=True)
+                
+                # Enhanced performance message with beautiful styling
                 if percentage >= 80:
-                    st.success("🌟 Excellent! You have great knowledge of our epics!")
+                    st.markdown('''
+                    <div class="performance-excellent">
+                        <h4>🌟 Outstanding Performance!</h4>
+                        <p>You have exceptional knowledge of our ancient epics! Your understanding of these timeless stories is truly impressive.</p>
+                    </div>
+                    ''', unsafe_allow_html=True)
                 elif percentage >= 60:
-                    st.info("👍 Good job! Keep learning more about our heritage!")
+                    st.markdown('''
+                    <div class="performance-good">
+                        <h4>👍 Great Job!</h4>
+                        <p>You have a solid foundation in our cultural heritage. Keep exploring these magnificent epics to deepen your knowledge!</p>
+                    </div>
+                    ''', unsafe_allow_html=True)
                 else:
-                    st.warning("📚 Keep studying! Our epics have so much wisdom to offer!")
+                    st.markdown('''
+                    <div class="performance-improve">
+                        <h4>📚 Keep Learning!</h4>
+                        <p>Every journey begins with a single step. These epics contain infinite wisdom - continue your exploration and you'll discover amazing stories!</p>
+                    </div>
+                    ''', unsafe_allow_html=True)
                 
                 # Show detailed results
                 st.subheader("📋 Detailed Results")
