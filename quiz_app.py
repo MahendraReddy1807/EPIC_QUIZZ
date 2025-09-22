@@ -244,11 +244,11 @@ def main():
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("🇺🇸 English", key="lang_en", use_container_width=True):
+            if st.button("English", key="lang_en", use_container_width=True):
                 st.session_state.selected_language = "english"
         
         with col2:
-            if st.button("🇮🇳 తెలుగు (Telugu)", key="lang_te", use_container_width=True):
+            if st.button("తెలుగు (Telugu)", key="lang_te", use_container_width=True):
                 st.session_state.selected_language = "telugu"
         
         # Show selected language
