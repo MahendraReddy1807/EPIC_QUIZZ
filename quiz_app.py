@@ -152,58 +152,162 @@ def get_random_questions(quiz_type, num_questions=20, exclude_questions=None):
     return selected_questions[:20]
 
 def display_leaderboard():
-    """Display leaderboard with CSV download option"""
+    """Display leaderboard with CSV download option - shows best score per user per quiz"""
     scores = load_scores()
     if not scores:
         st.info("No scores yet! Take a quiz to see the leaderboard.")
         return
     
     df = pd.DataFrame(scores)
-    df = df.sort_values(['percentage', 'timestamp'], ascending=[False, False])
+    
+    # Get best score per user per quiz type (eliminate duplicates)
+    df_best = df.loc[df.groupby(['name', 'quiz_type'])['percentage'].idxmax()]
+    df_best = df_best.sort_values(['percentage', 'timestamp'], ascending=[False, False])
     
     st.subheader("🏆 Leaderboard")
+    st.caption("Showing best score per user for each quiz type")
     
-    # Add download button for full leaderboard
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        # Prepare CSV data
-        csv_data = df[['name', 'quiz_type', 'score', 'total', 'percentage', 'language', 'timestamp']].copy()
-        csv_data['Quiz'] = csv_data['quiz_type'].str.title()
-        csv_data['Date'] = pd.to_datetime(csv_data['timestamp']).dt.strftime('%Y-%m-%d %H:%M')
-        csv_export = csv_data[['name', 'Quiz', 'score', 'total', 'percentage', 'language', 'Date']].rename(columns={
-            'name': 'Name',
-            'Quiz': 'Quiz Type',
-            'score': 'Score',
-            'total': 'Total Questions',
-            'percentage': 'Percentage',
-            'language': 'Language',
-            'Date': 'Date & Time'
-        })
+    # Add tabs for different views
+    tab1, tab2, tab3 = st.tabs(["🏆 Best Scores", "📊 All Attempts", "📈 Statistics"])
+    
+    with tab1:
+        # Best scores view (no duplicates)
+        col1, col2 = st.columns([3, 1])
+        with col2:
+            # Prepare CSV data for best scores
+            csv_data = df_best[['name', 'quiz_type', 'score', 'total', 'percentage', 'language', 'timestamp']].copy()
+            csv_data['Quiz'] = csv_data['quiz_type'].str.title()
+            csv_data['Date'] = pd.to_datetime(csv_data['timestamp']).dt.strftime('%Y-%m-%d %H:%M')
+            csv_export = csv_data[['name', 'Quiz', 'score', 'total', 'percentage', 'language', 'Date']].rename(columns={
+                'name': 'Name',
+                'Quiz': 'Quiz Type',
+                'score': 'Score',
+                'total': 'Total Questions',
+                'percentage': 'Percentage',
+                'language': 'Language',
+                'Date': 'Date & Time'
+            })
+            
+            st.download_button(
+                label="📥 Download Best Scores",
+                data=csv_export.to_csv(index=False),
+                file_name=f"quiz_best_scores_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
         
-        st.download_button(
-            label="📥 Download CSV",
-            data=csv_export.to_csv(index=False),
-            file_name=f"quiz_leaderboard_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
+        with col1:
+            st.write(f"**Total Participants:** {len(df_best['name'].unique())}")
+            st.write(f"**Total Quiz Attempts:** {len(df)}")
+        
+        # Top scores display (best per user per quiz)
+        if len(df_best) > 0:
+            top_scores = df_best.head(15)[['name', 'quiz_type', 'score', 'total', 'percentage', 'language', 'timestamp']]
+            top_scores['Quiz'] = top_scores['quiz_type'].str.title()
+            top_scores['Score'] = top_scores['score'].astype(str) + '/' + top_scores['total'].astype(str) + ' (' + top_scores['percentage'].astype(str) + '%)'
+            top_scores['Date'] = pd.to_datetime(top_scores['timestamp']).dt.strftime('%Y-%m-%d')
+            
+            display_df = top_scores[['name', 'Quiz', 'Score', 'language', 'Date']].rename(columns={
+                'name': 'Name',
+                'language': 'Language',
+                'Date': 'Date'
+            })
+            
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
+        else:
+            st.info("No scores available yet.")
     
-    with col1:
-        st.write(f"**Total Participants:** {len(df['name'].unique())}")
+    with tab2:
+        # All attempts view
+        col1, col2 = st.columns([3, 1])
+        with col2:
+            # Download all attempts
+            all_csv_data = df[['name', 'quiz_type', 'score', 'total', 'percentage', 'language', 'timestamp']].copy()
+            all_csv_data['Quiz'] = all_csv_data['quiz_type'].str.title()
+            all_csv_data['Date'] = pd.to_datetime(all_csv_data['timestamp']).dt.strftime('%Y-%m-%d %H:%M')
+            all_csv_export = all_csv_data[['name', 'Quiz', 'score', 'total', 'percentage', 'language', 'Date']].rename(columns={
+                'name': 'Name',
+                'Quiz': 'Quiz Type',
+                'score': 'Score',
+                'total': 'Total Questions',
+                'percentage': 'Percentage',
+                'language': 'Language',
+                'Date': 'Date & Time'
+            })
+            
+            st.download_button(
+                label="📥 Download All Attempts",
+                data=all_csv_export.to_csv(index=False),
+                file_name=f"quiz_all_attempts_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+        
+        with col1:
+            st.write(f"**Total Attempts:** {len(df)}")
+            st.write(f"**Unique Users:** {len(df['name'].unique())}")
+        
+        # Show all attempts (with duplicates)
+        df_all_sorted = df.sort_values(['percentage', 'timestamp'], ascending=[False, False])
+        if len(df_all_sorted) > 0:
+            all_scores = df_all_sorted.head(20)[['name', 'quiz_type', 'score', 'total', 'percentage', 'language', 'timestamp']]
+            all_scores['Quiz'] = all_scores['quiz_type'].str.title()
+            all_scores['Score'] = all_scores['score'].astype(str) + '/' + all_scores['total'].astype(str) + ' (' + all_scores['percentage'].astype(str) + '%)'
+            all_scores['Date'] = pd.to_datetime(all_scores['timestamp']).dt.strftime('%Y-%m-%d %H:%M')
+            
+            display_all_df = all_scores[['name', 'Quiz', 'Score', 'language', 'Date']].rename(columns={
+                'name': 'Name',
+                'language': 'Language',
+                'Date': 'Date & Time'
+            })
+            
+            st.dataframe(display_all_df, use_container_width=True, hide_index=True)
     
-    # Top 10 scores - Use dataframe display for better performance
-    top_scores = df.head(10)[['name', 'quiz_type', 'score', 'total', 'percentage', 'language', 'timestamp']]
-    top_scores['Quiz'] = top_scores['quiz_type'].str.title()
-    top_scores['Score'] = top_scores['score'].astype(str) + '/' + top_scores['total'].astype(str) + ' (' + top_scores['percentage'].astype(str) + '%)'
-    top_scores['Date'] = pd.to_datetime(top_scores['timestamp']).dt.strftime('%Y-%m-%d')
-    
-    display_df = top_scores[['name', 'Quiz', 'Score', 'language', 'Date']].rename(columns={
-        'name': 'Name',
-        'language': 'Language',
-        'Date': 'Date'
-    })
-    
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
+    with tab3:
+        # Statistics view
+        if len(df) > 0:
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("📊 Quiz Statistics")
+                
+                # Quiz type distribution
+                quiz_counts = df['quiz_type'].value_counts()
+                st.write("**Quiz Attempts by Type:**")
+                for quiz_type, count in quiz_counts.items():
+                    st.write(f"• {quiz_type.title()}: {count} attempts")
+                
+                # Language distribution
+                lang_counts = df['language'].value_counts()
+                st.write("\n**Language Preferences:**")
+                for lang, count in lang_counts.items():
+                    st.write(f"• {lang.title()}: {count} attempts")
+            
+            with col2:
+                st.subheader("🎯 Performance Stats")
+                
+                # Average scores
+                avg_score = df['percentage'].mean()
+                st.write(f"**Average Score:** {avg_score:.1f}%")
+                
+                # Score distribution
+                excellent = len(df[df['percentage'] >= 80])
+                good = len(df[(df['percentage'] >= 60) & (df['percentage'] < 80)])
+                needs_improvement = len(df[df['percentage'] < 60])
+                
+                st.write("**Performance Distribution:**")
+                st.write(f"• Excellent (≥80%): {excellent} attempts")
+                st.write(f"• Good (60-79%): {good} attempts")
+                st.write(f"• Needs Improvement (<60%): {needs_improvement} attempts")
+                
+                # Top performer
+                if len(df_best) > 0:
+                    top_performer = df_best.iloc[0]
+                    st.write(f"\n**🏆 Top Performer:**")
+                    st.write(f"• {top_performer['name']}")
+                    st.write(f"• {top_performer['percentage']}% in {top_performer['quiz_type'].title()}")
+        else:
+            st.info("No statistics available yet.")
 
 def main():
     st.set_page_config(
