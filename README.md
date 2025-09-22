@@ -27,8 +27,8 @@ A fast, bilingual quiz application for testing knowledge of Mahabharata and Rama
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/epic-quiz-app.git
-   cd epic-quiz-app
+   git clone https://github.com/MahendraReddy1807/EPIC_QUIZZ.git
+   cd EPIC_QUIZZ
    ```
 
 2. **Install dependencies**:
@@ -133,9 +133,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-Your Name - [@yourusername](https://twitter.com/yourusername) - your.email@example.com
+Mahendra Reddy - [@MahendraReddy1807](https://github.com/MahendraReddy1807)
 
-Project Link: [https://github.com/yourusername/epic-quiz-app](https://github.com/yourusername/epic-quiz-app)
+Project Link: [https://github.com/MahendraReddy1807/EPIC_QUIZZ](https://github.com/MahendraReddy1807/EPIC_QUIZZ)
 
 ---
 
