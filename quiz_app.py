@@ -189,6 +189,23 @@ def get_xp_for_quiz(score: int, total: int, difficulty_bonus: float = 1.0) -> in
     base_xp = (score / total) * 100
     return int(base_xp * difficulty_bonus)
 
+def calculate_xp_progress(profile: UserProfile) -> float:
+    """Calculate XP progress percentage to next level"""
+    next_level_xp = (profile.level * 500)
+    current_level_xp = ((profile.level - 1) * 500)
+    if next_level_xp == current_level_xp:
+        return 100.0
+    progress = ((profile.xp_points - current_level_xp) / (next_level_xp - current_level_xp)) * 100
+    return min(100.0, max(0.0, progress))
+
+def get_xp_progress_text(profile: UserProfile) -> str:
+    """Get XP progress text for display"""
+    next_level_xp = (profile.level * 500)
+    current_level_xp = ((profile.level - 1) * 500)
+    current_progress = profile.xp_points - current_level_xp
+    needed_for_next = next_level_xp - current_level_xp
+    return f"{current_progress} / {needed_for_next} XP to Level {profile.level + 1}"
+
 # Cache questions to avoid reloading - using fast questions for better performance
 @st.cache_data
 def load_questions():
@@ -2096,6 +2113,10 @@ def show_user_profile():
     """Display user profile with stats and achievements"""
     profile = st.session_state.user_profile
     
+    # Calculate XP progress
+    xp_progress = calculate_xp_progress(profile)
+    xp_progress_text = get_xp_progress_text(profile)
+    
     st.markdown(f"""
     <div class="profile-card">
         <h2>👤 {profile.username}'s Profile</h2>
@@ -2113,8 +2134,11 @@ def show_user_profile():
         <div style="margin: 1rem 0;">
             <p><strong>XP Progress to Next Level:</strong></p>
             <div style="background: #e0e0e0; border-radius: 10px; height: 20px; overflow: hidden;">
-                <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: {min(100, (profile.xp_points % 500) / 5)}%; transition: width 0.3s ease;"></div>
+                <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: {xp_progress}%; transition: width 0.3s ease;"></div>
             </div>
+            <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.5rem; text-align: center;">
+                {xp_progress_text}
+            </p>
         </div>
     </div>
     """, unsafe_allow_html=True)
