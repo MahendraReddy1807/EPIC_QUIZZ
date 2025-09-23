@@ -75,12 +75,12 @@ def get_mahabharata_questions_from_list():
             "d": "medium"
         })
     
-    # Fill remaining medium questions with variations
+    # Fill remaining medium questions with clean variations
     for i in range(len(medium_questions_data), 34):
         base_q = medium_questions_data[i % len(medium_questions_data)]
         mahabharata_questions.append({
-            "q": f"{base_q['q']} (Variant {i+1})",
-            "tq": f"{base_q['tq']} (వేరియంట్ {i+1})",
+            "q": base_q['q'],
+            "tq": base_q['tq'],
             "o": base_q["o"],
             "to": base_q["to"],
             "c": base_q["c"],
@@ -112,12 +112,12 @@ def get_mahabharata_questions_from_list():
             "d": "hard"
         })
     
-    # Fill remaining hard questions with variations
+    # Fill remaining hard questions with clean variations
     for i in range(len(hard_questions_data), 33):
         base_q = hard_questions_data[i % len(hard_questions_data)]
         mahabharata_questions.append({
-            "q": f"{base_q['q']} (Advanced {i+1})",
-            "tq": f"{base_q['tq']} (అధునాతన {i+1})",
+            "q": base_q['q'],
+            "tq": base_q['tq'],
             "o": base_q["o"],
             "to": base_q["to"],
             "c": base_q["c"],
@@ -234,12 +234,12 @@ def get_ramayana_questions_from_list():
             "d": "medium"
         })
     
-    # Fill remaining medium questions
+    # Fill remaining medium questions with clean variations
     for i in range(len(medium_ramayana_data), 34):
         base_q = medium_ramayana_data[i % len(medium_ramayana_data)]
         ramayana_questions.append({
-            "q": f"{base_q['q']} (Variant {i+1})",
-            "tq": f"{base_q['tq']} (వేరియంట్ {i+1})",
+            "q": base_q['q'],
+            "tq": base_q['tq'],
             "o": base_q["o"],
             "to": base_q["to"],
             "c": base_q["c"],
@@ -271,12 +271,12 @@ def get_ramayana_questions_from_list():
             "d": "hard"
         })
     
-    # Fill remaining hard questions
+    # Fill remaining hard questions with clean variations
     for i in range(len(hard_ramayana_data), 33):
         base_q = hard_ramayana_data[i % len(hard_ramayana_data)]
         ramayana_questions.append({
-            "q": f"{base_q['q']} (Advanced {i+1})",
-            "tq": f"{base_q['tq']} (అధునాతన {i+1})",
+            "q": base_q['q'],
+            "tq": base_q['tq'],
             "o": base_q["o"],
             "to": base_q["to"],
             "c": base_q["c"],

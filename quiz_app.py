@@ -305,17 +305,579 @@ def get_theme_css(theme_name: str, font_size: str, accessibility_mode: bool) -> 
     
     return f"""
     <style>
-    /* Base styling */
+    /* Base styling with proper text visibility */
     .stApp {{
         background-color: {theme['background']};
-        color: {theme['text']};
+        color: {theme['text']} !important;
         font-size: {fs['base']};
     }}
     
-    /* Headers */
-    h1 {{ font-size: {fs['h1']} !important; color: {theme['primary']} !important; }}
-    h2 {{ font-size: {fs['h2']} !important; color: {theme['secondary']} !important; }}
-    h3 {{ font-size: {fs['h3']} !important; color: {theme['text']} !important; }}
+    /* Ensure main text is visible but allow specific overrides */
+    .stApp, .stMarkdown, p, div, span {{
+        color: {theme['text']} !important;
+    }}
+    
+    /* Headers with proper spacing */
+    h1 {{ 
+        font-size: {fs['h1']} !important; 
+        color: {theme['primary']} !important; 
+        margin-bottom: 1rem !important;
+        line-height: 1.2 !important;
+    }}
+    h2 {{ 
+        font-size: {fs['h2']} !important; 
+        color: {theme['secondary']} !important; 
+        margin: 1rem 0 !important;
+        line-height: 1.3 !important;
+    }}
+    h3 {{ 
+        font-size: {fs['h3']} !important; 
+        color: {theme['text']} !important; 
+        margin: 0.8rem 0 !important;
+        line-height: 1.4 !important;
+    }}
+    
+    /* Paragraphs and text elements */
+    p, div, span {{
+        color: {theme['text']} !important;
+        line-height: 1.6 !important;
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    /* Streamlit specific elements */
+    .stMarkdown p {{
+        color: {theme['text']} !important;
+        margin-bottom: 1rem !important;
+    }}
+    
+    .stInfo {{
+        background-color: {theme['surface']} !important;
+        color: {theme['text']} !important;
+        border: 1px solid {theme['primary']} !important;
+        padding: 1rem !important;
+        border-radius: 8px !important;
+        margin: 1rem 0 !important;
+    }}
+    
+    .stSuccess {{
+        background-color: #d4edda !important;
+        color: #155724 !important;
+        border: 1px solid #c3e6cb !important;
+        padding: 1rem !important;
+        border-radius: 8px !important;
+        margin: 1rem 0 !important;
+    }}
+    
+    /* Fix button text visibility */
+    .stButton > button {{
+        color: white !important;
+        background: linear-gradient(135deg, {theme['primary']} 0%, {theme['secondary']} 100%) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 1.5rem !important;
+        font-size: {fs['base']} !important;
+        font-weight: 600 !important;
+        margin: 0.5rem 0 !important;
+    }}
+    
+    /* Clean radio button styling like the image */
+    .stRadio {{
+        background: white !important;
+        padding: 1.2rem !important;
+        border-radius: 12px !important;
+        border: 1px solid #ddd !important;
+        margin: 1rem 0 !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+    }}
+    
+    .stRadio > div {{
+        background: transparent !important;
+    }}
+    
+    .stRadio label {{
+        color: #2d3436 !important;
+        font-size: {fs['base']} !important;
+        font-weight: 400 !important;
+        margin: 0.4rem 0 !important;
+        padding: 0.8rem 1rem !important;
+        display: block !important;
+        cursor: pointer !important;
+        border-radius: 8px !important;
+        border: 1px solid #e9ecef !important;
+        transition: all 0.2s ease !important;
+        background: #fdfdfd !important;
+    }}
+    
+    .stRadio label:hover {{
+        background: #f1f3f4 !important;
+        border-color: #6c5ce7 !important;
+        color: #2d3436 !important;
+    }}
+    
+    /* Radio button input styling */
+    .stRadio input[type="radio"] {{
+        margin-right: 0.8rem !important;
+        transform: scale(1.2) !important;
+        accent-color: #6c5ce7 !important;
+    }}
+    
+    /* Ensure radio button options are properly spaced */
+    .stRadio div[role="radiogroup"] > label {{
+        color: #2d3436 !important;
+        background: #fdfdfd !important;
+        padding: 0.8rem 1rem !important;
+        margin: 0.3rem 0 !important;
+        border-radius: 8px !important;
+        border: 1px solid #e9ecef !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+    }}
+    
+    .stRadio div[role="radiogroup"] > label:hover {{
+        background: #f1f3f4 !important;
+        border-color: #6c5ce7 !important;
+        color: #2d3436 !important;
+    }}
+    
+    /* Selected radio button styling */
+    .stRadio div[role="radiogroup"] > label[data-checked="true"] {{
+        background: #e8f4fd !important;
+        border-color: #6c5ce7 !important;
+        font-weight: 500 !important;
+        color: #2d3436 !important;
+    }}
+    
+    /* Fix text input labels */
+    .stTextInput label {{
+        color: {theme['text']} !important;
+        font-weight: 600 !important;
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    /* Fix selectbox labels */
+    .stSelectbox label {{
+        color: {theme['text']} !important;
+        font-weight: 600 !important;
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    /* Ensure proper spacing for all elements */
+    .element-container {{
+        margin-bottom: 1rem !important;
+    }}
+    
+    /* Fix markdown text visibility */
+    .stMarkdown {{
+        color: {theme['text']} !important;
+    }}
+    
+    /* Fix caption text */
+    .caption {{
+        color: {theme['text_secondary']} !important;
+        font-size: 0.9rem !important;
+        margin-top: 0.5rem !important;
+    }}
+    
+    /* Ensure proper line height for readability */
+    body, .stApp {{
+        line-height: 1.6 !important;
+    }}
+    
+    /* Fix any white text on white background issues */
+    .stApp > div {{
+        color: {theme['text']} !important;
+    }}
+    
+    /* Override any conflicting styles */
+    .stMarkdown > div {{
+        color: {theme['text']} !important;
+    }}
+    
+    /* Fix subheader visibility */
+    .stMarkdown h3 {{
+        color: {theme['text']} !important;
+        font-weight: 600 !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }}
+    
+    /* Add proper spacing between sections */
+    .stMarkdown hr {{
+        margin: 2rem 0 !important;
+        border-color: {theme['text_secondary']} !important;
+    }}
+    
+    /* Form styling improvements with better visibility */
+    .stTextInput > div > div > input {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+        border: 2px solid {theme['primary']}40 !important;
+        border-radius: 8px !important;
+        padding: 0.75rem !important;
+        font-size: {fs['base']} !important;
+    }}
+    
+    .stTextInput > div > div > input:focus {{
+        border-color: {theme['primary']} !important;
+        box-shadow: 0 0 0 2px {theme['primary']}20 !important;
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+    }}
+    
+    .stTextInput > div > div > input::placeholder {{
+        color: {theme['text_secondary']} !important;
+        opacity: 0.7 !important;
+    }}
+    
+    /* Selectbox styling with proper visibility */
+    .stSelectbox > div > div > select {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+        border: 2px solid {theme['primary']}40 !important;
+        border-radius: 8px !important;
+        padding: 0.75rem !important;
+    }}
+    
+    .stSelectbox > div > div > select:focus {{
+        border-color: {theme['primary']} !important;
+        box-shadow: 0 0 0 2px {theme['primary']}20 !important;
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+    }}
+    
+    /* Fix selectbox dropdown options */
+    .stSelectbox > div > div > select option {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+        padding: 0.5rem !important;
+    }}
+    
+    /* Fix selectbox text visibility in all states */
+    .stSelectbox div[data-baseweb="select"] {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+    }}
+    
+    .stSelectbox div[data-baseweb="select"] > div {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+        border: 2px solid {theme['primary']}40 !important;
+    }}
+    
+    .stSelectbox div[data-baseweb="select"] span {{
+        color: {theme['text']} !important;
+    }}
+    
+    /* Login page specific styling is now inline */
+    
+    /* Container styling with centered content and compact padding */
+    .stContainer {{
+        background-color: {theme['surface']} !important;
+        border-radius: 10px !important;
+        padding: 1rem !important;
+        margin: 0.5rem 0 !important;
+        border: 1px solid {theme['primary']}20 !important;
+        text-align: center !important;
+    }}
+    
+    /* Center all content within tabs with compact padding */
+    .stTabs [data-baseweb="tab-panel"] {{
+        text-align: center !important;
+        padding: 1rem 0.5rem !important;
+    }}
+    
+    /* Center form elements */
+    .stTabs [data-baseweb="tab-panel"] .stMarkdown {{
+        text-align: center !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] h3 {{
+        text-align: center !important;
+        margin-bottom: 1.5rem !important;
+    }}
+    
+    /* Center input labels */
+    .stTabs [data-baseweb="tab-panel"] .stTextInput label {{
+        text-align: center !important;
+        display: block !important;
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] .stSelectbox label {{
+        text-align: center !important;
+        display: block !important;
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    /* Center input fields */
+    .stTabs [data-baseweb="tab-panel"] .stTextInput {{
+        text-align: center !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] .stSelectbox {{
+        text-align: center !important;
+    }}
+    
+    /* Center buttons in tabs */
+    .stTabs [data-baseweb="tab-panel"] .stButton {{
+        text-align: center !important;
+        margin: 0.5rem auto !important;
+    }}
+    
+    /* Force center alignment for all tab content */
+    .stTabs [data-baseweb="tab-panel"] * {{
+        text-align: center !important;
+    }}
+    
+    /* Override for input fields to keep text left-aligned inside the field */
+    .stTabs [data-baseweb="tab-panel"] input {{
+        text-align: left !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] select {{
+        text-align: left !important;
+    }}
+    
+    /* Center the input containers */
+    .stTabs [data-baseweb="tab-panel"] .stTextInput > div {{
+        text-align: center !important;
+        margin: 0 auto !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] .stSelectbox > div {{
+        text-align: center !important;
+        margin: 0 auto !important;
+    }}
+    
+    /* Center error/success/warning messages in tabs */
+    .stTabs [data-baseweb="tab-panel"] .stAlert {{
+        text-align: center !important;
+        margin: 1rem auto !important;
+    }}
+    
+    /* Center help text */
+    .stTabs [data-baseweb="tab-panel"] .stTextInput > label > div[data-testid="stMarkdownContainer"] {{
+        text-align: center !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] .stSelectbox > label > div[data-testid="stMarkdownContainer"] {{
+        text-align: center !important;
+    }}
+    
+    /* Reduce spacing between form elements in tabs */
+    .stTabs [data-baseweb="tab-panel"] .stTextInput {{
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] .stSelectbox {{
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    .stTabs [data-baseweb="tab-panel"] .stButton {{
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.25rem !important;
+    }}
+    
+    /* Reduce spacing in tab headers */
+    .stTabs [data-baseweb="tab-panel"] h3 {{
+        margin-top: 0.5rem !important;
+        margin-bottom: 1rem !important;
+    }}
+    
+    /* Compact alert messages */
+    .stTabs [data-baseweb="tab-panel"] .stAlert {{
+        margin: 0.5rem auto !important;
+        padding: 0.5rem !important;
+    }}
+    
+    /* Force visibility for all form elements */
+    input, select, textarea {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+    }}
+    
+    /* Override any dark theme conflicts */
+    .stSelectbox [data-testid="stMarkdownContainer"] {{
+        color: {theme['text']} !important;
+    }}
+    
+    .stTextInput [data-testid="stMarkdownContainer"] {{
+        color: {theme['text']} !important;
+    }}
+    
+    /* Ensure dropdown visibility */
+    .stSelectbox div[role="listbox"] {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+        border: 1px solid {theme['primary']} !important;
+    }}
+    
+    .stSelectbox div[role="option"] {{
+        background-color: {theme['background']} !important;
+        color: {theme['text']} !important;
+    }}
+    
+    .stSelectbox div[role="option"]:hover {{
+        background-color: {theme['primary']}20 !important;
+        color: {theme['text']} !important;
+    }}
+    
+    /* Streamlit specific selectbox fixes */
+    .stSelectbox div[data-baseweb="select"] > div {{
+        background-color: white !important;
+        color: #000000 !important;
+        border: 2px solid {theme['primary']} !important;
+    }}
+    
+    .stSelectbox div[data-baseweb="select"] > div > div {{
+        color: #000000 !important;
+    }}
+    
+    .stSelectbox div[data-baseweb="select"] span {{
+        color: #000000 !important;
+    }}
+    
+    /* Fix dropdown menu */
+    .stSelectbox ul[role="listbox"] {{
+        background-color: white !important;
+        border: 1px solid {theme['primary']} !important;
+    }}
+    
+    .stSelectbox li[role="option"] {{
+        background-color: white !important;
+        color: #000000 !important;
+        padding: 0.5rem !important;
+    }}
+    
+    .stSelectbox li[role="option"]:hover {{
+        background-color: {theme['primary']}20 !important;
+        color: #000000 !important;
+    }}
+    
+    .stSelectbox li[role="option"][aria-selected="true"] {{
+        background-color: {theme['primary']} !important;
+        color: white !important;
+    }}
+    
+    /* Fix text input */
+    .stTextInput input {{
+        background-color: white !important;
+        color: #000000 !important;
+        border: 2px solid {theme['primary']}40 !important;
+    }}
+    
+    .stTextInput input:focus {{
+        background-color: white !important;
+        color: #000000 !important;
+        border-color: {theme['primary']} !important;
+    }}
+    
+    /* Keep button text white */
+    .stButton > button {{
+        color: white !important;
+        background: linear-gradient(135deg, {theme['primary']} 0%, {theme['secondary']} 100%) !important;
+    }}
+    
+    /* Keep card text as intended */
+    .score-card, .score-card * {{
+        color: white !important;
+    }}
+    
+    .achievement-card, .achievement-card * {{
+        color: white !important;
+    }}
+    
+    .performance-excellent, .performance-excellent * {{
+        color: white !important;
+    }}
+    
+    .performance-good, .performance-good * {{
+        color: white !important;
+    }}
+    
+    .performance-improve, .performance-improve * {{
+        color: white !important;
+    }}
+    
+    /* Override the global color rule for specific elements */
+    .stSelectbox, .stSelectbox * {{
+        color: #000000 !important;
+    }}
+    
+    .stTextInput, .stTextInput * {{
+        color: #000000 !important;
+    }}
+    
+    /* But keep labels visible */
+    .stSelectbox > label {{
+        color: {theme['text']} !important;
+    }}
+    
+    .stTextInput > label {{
+        color: {theme['text']} !important;
+    }}
+    
+    /* Help text styling */
+    .stTextInput > label > div[data-testid="stMarkdownContainer"] > p {{
+        color: {theme['text_secondary']} !important;
+        font-size: 0.85rem !important;
+        margin-top: 0.25rem !important;
+    }}
+    
+    /* Compact question form styling */
+    .stForm {{
+        background-color: white !important;
+        border: 2px solid {theme['primary']}30 !important;
+        border-radius: 12px !important;
+        padding: 1.2rem !important;
+        margin: 0.8rem 0 !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+    }}
+    
+    /* Reduce spacing in forms */
+    .stForm > div {{
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    /* Compact form buttons */
+    .stForm .stButton {{
+        margin-top: 0.8rem !important;
+    }}
+    
+    .stForm .stButton > button {{
+        padding: 0.6rem 1.2rem !important;
+        font-size: 0.9rem !important;
+    }}
+    
+    /* Question text styling */
+    .stForm h3 {{
+        color: {theme['text']} !important;
+        font-size: {fs['h3']} !important;
+        margin-bottom: 1rem !important;
+        line-height: 1.4 !important;
+    }}
+    
+    /* Progress bar styling */
+    .stProgress > div > div > div {{
+        background: linear-gradient(90deg, {theme['primary']} 0%, {theme['secondary']} 100%) !important;
+        height: 12px !important;
+        border-radius: 6px !important;
+    }}
+    
+    /* Expander styling for results */
+    .streamlit-expanderHeader {{
+        background-color: {theme['surface']} !important;
+        color: {theme['text']} !important;
+        border: 1px solid {theme['primary']}30 !important;
+        border-radius: 8px !important;
+    }}
+    
+    .streamlit-expanderContent {{
+        background-color: {theme['background']} !important;
+        border: 1px solid {theme['primary']}20 !important;
+        border-top: none !important;
+        border-radius: 0 0 8px 8px !important;
+    }}
     
     /* Enhanced score card */
     .score-card {{
@@ -867,9 +1429,120 @@ def main():
     theme_css = get_theme_css(st.session_state.theme, st.session_state.font_size, st.session_state.accessibility_mode)
     st.markdown(theme_css, unsafe_allow_html=True)
     
-    # Mode toggle in sidebar
+    # Enhanced sidebar styling
+    st.markdown("""
+    <style>
+    /* Sidebar styling */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #667eea15 0%, #f8f9fa 100%) !important;
+    }
+    
+    /* Sidebar header */
+    .sidebar-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    /* User stats cards */
+    .stat-card {
+        background: white;
+        padding: 0.8rem;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateX(5px);
+    }
+    
+    /* Navigation styling */
+    .nav-item {
+        background: white;
+        margin: 0.3rem 0;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+    
+    .nav-item:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Mode toggle styling */
+    .mode-toggle {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    /* Sidebar radio buttons */
+    .css-1d391kg .stRadio > div {
+        background: white;
+        border-radius: 8px;
+        padding: 0.5rem;
+        margin: 0.3rem 0;
+        border: 1px solid #e9ecef;
+        transition: all 0.2s ease;
+    }
+    
+    .css-1d391kg .stRadio > div:hover {
+        border-color: #667eea;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .css-1d391kg .stRadio label {
+        color: #2c3e50 !important;
+        font-weight: 500;
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .css-1d391kg .stRadio label:hover {
+        color: #667eea !important;
+    }
+    
+    /* Sidebar toggle styling */
+    .css-1d391kg .stCheckbox {
+        background: white;
+        padding: 0.8rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin: 0.5rem 0;
+    }
+    
+    /* Sidebar markdown styling */
+    .css-1d391kg .stMarkdown {
+        color: #2c3e50;
+    }
+    
+    .css-1d391kg h3 {
+        color: #2c3e50 !important;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Enhanced mode toggle in sidebar
     with st.sidebar:
-        st.markdown("### ⚙️ App Mode")
+        st.markdown("""
+        <div class="mode-toggle">
+            <h4 style="margin: 0; color: white;">⚙️ App Mode</h4>
+        </div>
+        """, unsafe_allow_html=True)
+        
         enhanced_mode = st.toggle("Enhanced Mode", value=st.session_state.enhanced_mode, help="Enable user profiles, achievements, and themes")
         if enhanced_mode != st.session_state.enhanced_mode:
             st.session_state.enhanced_mode = enhanced_mode
@@ -889,19 +1562,73 @@ def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Enhanced sidebar navigation
+        # Enhanced sidebar navigation with beautiful user profile
         with st.sidebar:
-            st.markdown(f"### 👤 {st.session_state.user_profile.username}")
-            st.markdown(f"**Level:** {st.session_state.user_profile.level}")
-            st.markdown(f"**XP:** {st.session_state.user_profile.xp_points}")
-            st.markdown(f"**Streak:** {st.session_state.user_profile.streak_days} days 🔥")
+            # User profile header
+            st.markdown(f"""
+            <div class="sidebar-header">
+                <h3 style="margin: 0; color: white;">👤 {st.session_state.user_profile.username}</h3>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9; color: white;">Level {st.session_state.user_profile.level} Explorer</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # User stats with cards
+            st.markdown(f"""
+            <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: #2c3e50;">⭐ XP Points</span>
+                    <span style="color: #e74c3c; font-weight: bold;">{st.session_state.user_profile.xp_points}</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: #2c3e50;">🔥 Streak</span>
+                    <span style="color: #f39c12; font-weight: bold;">{st.session_state.user_profile.streak_days} days</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div class="stat-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600; color: #2c3e50;">📚 Quizzes</span>
+                    <span style="color: #27ae60; font-weight: bold;">{st.session_state.user_profile.total_quizzes}</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # XP Progress bar
+            next_level_xp = (st.session_state.user_profile.level * 500)
+            current_level_xp = ((st.session_state.user_profile.level - 1) * 500)
+            progress = min(100, ((st.session_state.user_profile.xp_points - current_level_xp) / (next_level_xp - current_level_xp)) * 100)
+            
+            st.markdown(f"""
+            <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.9rem; color: #2c3e50; font-weight: 600;">Level Progress</span>
+                    <span style="font-size: 0.8rem; color: #7f8c8d;">{progress:.0f}%</span>
+                </div>
+                <div style="background: #ecf0f1; height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: {progress}%; transition: width 0.3s ease;"></div>
+                </div>
+                <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 0.3rem; text-align: center;">
+                    {st.session_state.user_profile.xp_points - current_level_xp} / {next_level_xp - current_level_xp} XP to Level {st.session_state.user_profile.level + 1}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             
             st.markdown("---")
             
+            # Enhanced navigation with icons and styling
+            st.markdown("### 🧭 Navigation")
             page = st.radio(
-                "Navigation",
+                "Choose your destination:",
                 ["🎯 Take Quiz", "👤 Profile", "🏆 Leaderboard", "⚙️ Settings", "📜 About", "🚪 Logout"],
-                key="nav_radio"
+                key="nav_radio",
+                label_visibility="collapsed"
             )
         
         # Enhanced page routing
@@ -927,17 +1654,35 @@ def main():
             return
     
     else:
-        # Classic mode - original interface
+        # Classic mode - original interface with enhanced sidebar
         st.title("📚 Epic Quiz App")
         st.caption("Test your knowledge of Mahabharata & Ramayana")
         
-        # Sidebar for navigation - Always in English
-        st.sidebar.title("Navigation")
-        page = st.sidebar.radio("Choose an option:", ["Take Quiz", "Leaderboard", "About"])
-        
-        # Performance indicator
-        st.sidebar.markdown("---")
-        st.sidebar.caption("⚡ Classic Mode: Simple & Fast")
+        # Enhanced sidebar for classic mode
+        with st.sidebar:
+            st.markdown("""
+            <div class="sidebar-header">
+                <h3 style="margin: 0; color: white;">📚 Epic Quiz</h3>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9; color: white;">Classic Mode</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### 🧭 Navigation")
+            page = st.radio("Choose your destination:", ["Take Quiz", "Leaderboard", "About"], label_visibility="collapsed")
+            
+            # Performance indicator with styling
+            st.markdown("---")
+            st.markdown("""
+            <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; border-left: 4px solid #27ae60;">
+                <div style="display: flex; align-items: center;">
+                    <span style="font-size: 1.2rem; margin-right: 0.5rem;">⚡</span>
+                    <div>
+                        <div style="font-weight: 600; color: #27ae60;">Classic Mode</div>
+                        <div style="font-size: 0.8rem; color: #2c3e50;">Simple & Fast</div>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         
         if page == "Take Quiz":
             show_classic_quiz_interface()
@@ -1295,7 +2040,7 @@ Date: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}
 
 # Enhanced UI Functions
 def show_login_page():
-    """Display login/registration page"""
+    """Display simple login/registration page"""
     st.markdown("## 👤 Welcome to Epic Quiz App")
     st.markdown("Please login or create an account to track your progress and earn achievements!")
     
@@ -1305,16 +2050,19 @@ def show_login_page():
         st.subheader("Login to Your Account")
         username = st.text_input("Username", key="login_username", placeholder="Enter your username")
         
-        if st.button("Login", key="login_btn", use_container_width=True):
+        if st.button("Login", key="login_btn", use_container_width=True, type="primary"):
             if username:
-                profile = get_user_profile(username)
-                if profile:
-                    st.session_state.user_profile = profile
-                    st.success(f"Welcome back, {username}! 🎉")
-                    time.sleep(1)
-                    st.rerun()
+                if len(username.strip()) < 3:
+                    st.error("Username must be at least 3 characters long.")
                 else:
-                    st.error("User not found. Please register first.")
+                    profile = get_user_profile(username.strip())
+                    if profile:
+                        st.session_state.user_profile = profile
+                        st.success(f"Welcome back, {username}! 🎉")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error("User not found. Please register first.")
             else:
                 st.warning("Please enter a username.")
     
@@ -1323,7 +2071,7 @@ def show_login_page():
         new_username = st.text_input("Choose Username", key="register_username", placeholder="Enter a unique username")
         preferred_lang = st.selectbox("Preferred Language", ["english", "telugu"], key="register_lang")
         
-        if st.button("Create Account", key="register_btn", use_container_width=True):
+        if st.button("Create Account", key="register_btn", use_container_width=True, type="primary"):
             if new_username:
                 if len(new_username) < 3:
                     st.error("Username must be at least 3 characters long.")
@@ -1556,15 +2304,20 @@ def show_enhanced_quiz_interface():
     if not hasattr(st.session_state, 'selected_language'):
         st.session_state.selected_language = default_lang
     
-    # Show selected language
+    # Show selected language with proper spacing
     if hasattr(st.session_state, 'selected_language'):
         lang_display = "English" if st.session_state.selected_language == "english" else "Telugu"
+        st.markdown("")  # Add spacing
         st.success(f"✅ Selected Language: {lang_display}")
+        st.markdown("")  # Add spacing
         
-        # Quiz selection
+        # Quiz selection with proper spacing
+        st.markdown("---")
         st.subheader("📖 Choose Your Epic Adventure")
-        st.info(f"Quiz will be displayed in: **{lang_display}**")
+        st.markdown("")  # Add spacing
+        st.info(f"🌐 Quiz will be displayed in: **{lang_display}**")
         st.info("📊 **Difficulty Distribution**: 6 Easy + 8 Medium + 6 Hard questions (20 total)")
+        st.markdown("")  # Add spacing
         
         col1, col2 = st.columns(2)
         
@@ -1594,14 +2347,17 @@ def show_classic_quiz_interface():
         if st.button("తెలుగు (Telugu)", key="lang_te", use_container_width=True):
             st.session_state.selected_language = "telugu"
     
-    # Show selected language
+    # Show selected language with proper spacing
     if hasattr(st.session_state, 'selected_language'):
         if st.session_state.selected_language == "english":
+            st.markdown("")  # Add spacing
             st.success("✅ Selected Language: English")
             language = "English"
         else:
+            st.markdown("")  # Add spacing
             st.success("✅ Selected Language: Telugu")
             language = "Telugu"
+        st.markdown("")  # Add spacing
     else:
         st.info("Please select a language first")
         return
@@ -1688,29 +2444,41 @@ def show_enhanced_quiz_questions():
     if current_q < len(questions):
         _, _, question = questions[current_q]
         
-        # Question display with XP preview
+        # Compact question display
         difficulty = question.get('difficulty', 'medium')
         difficulty_colors = {'easy': '🟢', 'medium': '🟡', 'hard': '🔴'}
         difficulty_emoji = difficulty_colors.get(difficulty, '🟡')
-        
-        st.markdown("---")
-        st.markdown(f"### 📝 {question['question'][lang]}")
-        st.markdown(f"**Difficulty**: {difficulty_emoji} {difficulty.title()}")
-        
-        # XP preview
         xp_preview = get_xp_for_quiz(1, 1, 1.0 + (0.5 if difficulty == 'hard' else 0.2 if difficulty == 'medium' else 0))
-        st.markdown(f"**Potential XP**: +{xp_preview} points")
-        st.markdown("---")
         
-        # Options
+        # Clean question display like the image
+        st.markdown(f"""
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; 
+                    margin: 1rem 0; border-left: 4px solid #6c5ce7;">
+            <h3 style="color: #2d3436; margin-bottom: 1rem; font-size: 1.3rem;">
+                📝 {question['question'][lang]}
+            </h3>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #636e72; font-size: 0.9rem;">
+                    <strong>Difficulty:</strong> {difficulty_emoji} {difficulty.title()}
+                </span>
+                <span style="color: #00b894; font-size: 0.9rem;">
+                    <strong>Potential XP:</strong> +{xp_preview} points
+                </span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Clean options display
         options = question["options"][lang]
         
         with st.form(key=f"question_form_{current_q}"):
+            st.markdown("### 🤔 Choose your answer:")
             selected_option = st.radio(
-                "Choose your answer:",
+                "Select one option:",
                 options,
                 key=f"q_{current_q}",
-                index=None
+                index=None,
+                label_visibility="collapsed"
             )
             
             col1, col2, col3 = st.columns([1, 1, 1])
@@ -1772,24 +2540,35 @@ def show_classic_quiz_questions():
     if current_q < len(questions):
         _, _, question = questions[current_q]
         
-        # Display difficulty level
+        # Compact classic question display
         difficulty = question.get('difficulty', 'medium')
         difficulty_colors = {'easy': '🟢', 'medium': '🟡', 'hard': '🔴'}
         difficulty_emoji = difficulty_colors.get(difficulty, '🟡')
         
-        st.markdown("---")
-        st.markdown(f"### 📝 {question['question'][lang]}")
-        st.markdown(f"**Difficulty**: {difficulty_emoji} {difficulty.title()}")
-        st.markdown("---")
+        # Clean question display for classic mode
+        st.markdown(f"""
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; 
+                    margin: 1rem 0; border-left: 4px solid #6c5ce7;">
+            <h3 style="color: #2d3436; margin-bottom: 1rem; font-size: 1.3rem;">
+                📝 {question['question'][lang]}
+            </h3>
+            <p style="color: #636e72; margin: 0; font-size: 0.9rem;">
+                <strong>Difficulty:</strong> {difficulty_emoji} {difficulty.title()}
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         
+        # Clean options display
         options = question["options"][lang]
         
         with st.form(key=f"question_form_{current_q}"):
+            st.markdown("### 🤔 Choose your answer:")
             selected_option = st.radio(
-                "Choose your answer:",
+                "Select one option:",
                 options,
                 key=f"q_{current_q}",
-                index=None
+                index=None,
+                label_visibility="collapsed"
             )
             
             col1, col2, col3 = st.columns([1, 1, 1])
