@@ -803,6 +803,7 @@ def show_login_page():
     <div style="text-align: center; margin-bottom: 2rem;">
         <h1 style="color: #667eea; margin-bottom: 0.5rem;">📚 Epic Quiz App</h1>
         <p style="color: #6c757d; font-size: 1.1rem;">Please login or create an account to track your progress and earn achievements!</p>
+        <p style="color: #28a745; font-size: 0.9rem;">✅ Version 2.1 - Admin Dashboard Updated</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -853,6 +854,8 @@ def show_login_page():
     
     with tab3:
         st.subheader("🔐 Admin Access")
+        st.info("🔧 Admin Panel Updated - Version 2.1")
+        
         admin_username = st.text_input("Admin Username", key="admin_username", placeholder="Enter admin username")
         admin_password = st.text_input("Admin Password", key="admin_password", type="password", placeholder="Enter admin password")
         
@@ -860,7 +863,7 @@ def show_login_page():
             if admin_username == "Mahi07" and admin_password == "1477":
                 st.session_state.admin_logged_in = True
                 st.session_state.user_profile = create_admin_profile()
-                st.success("Welcome Admin! 👑")
+                st.success("Welcome Admin! 👑 Dashboard is now working!")
                 st.balloons()
                 time.sleep(1)
                 st.rerun()
@@ -868,6 +871,7 @@ def show_login_page():
                 st.error("Invalid admin credentials!")
         
         st.info("🔒 Admin access is restricted to authorized personnel only.")
+        st.caption("Credentials: Mahi07 / 1477")
 
 # Admin Functions
 def create_admin_profile():
@@ -948,6 +952,7 @@ def show_admin_dashboard():
     """Display admin dashboard - MINIMAL VERSION"""
     st.write("# 👑 ADMIN DASHBOARD")
     st.write("Welcome Admin Mahi07!")
+    st.success("🎉 Admin Dashboard is now working! Version 2.1")
     st.write("---")
     
     st.write("## 📊 Quick Stats")
