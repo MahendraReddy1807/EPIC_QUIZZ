@@ -1,3 +1,7 @@
+# EPIC QUIZ APP - ENHANCED VERSION 2.1 - ADMIN DASHBOARD WORKING
+# Last Updated: 2024-09-24 - Admin Features Added
+# Force Update: 20240924-v2.1
+
 import streamlit as st
 import json
 import datetime

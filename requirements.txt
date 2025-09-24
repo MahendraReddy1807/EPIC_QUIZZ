@@ -1,2 +1,3 @@
-streamlit
-pandas
+# Epic Quiz App - Enhanced v2.1 - Admin Dashboard Working
+streamlit>=1.28.0
+pandas>=1.5.0

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Streamlit Cloud entry point - ensures the enhanced version is loaded
+VERSION 2.1 - ADMIN DASHBOARD WORKING - FORCE UPDATE 20240924
 """
 
 import sys
