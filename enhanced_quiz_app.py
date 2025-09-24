@@ -1579,15 +1579,96 @@ def main():
         st.rerun()
     
     elif page == "👑 Admin Dashboard":
-        st.write("DEBUG: Admin Dashboard page selected")
-        st.write(f"DEBUG: admin_logged_in = {getattr(st.session_state, 'admin_logged_in', 'NOT SET')}")
+        # DIRECT ADMIN DASHBOARD - NO FUNCTION CALLS
+        st.title("👑 ADMIN DASHBOARD")
+        st.success("🎉 Welcome Admin Mahi07! Dashboard is working!")
+        st.markdown("---")
         
-        if hasattr(st.session_state, 'admin_logged_in') and st.session_state.admin_logged_in:
-            st.write("DEBUG: Calling show_admin_dashboard()")
-            show_admin_dashboard()
-        else:
-            st.error("❌ Admin access denied. Please login as admin first.")
-            st.info("💡 Use the Admin tab in the login page to access admin features.")
+        # Admin Stats
+        st.subheader("📊 System Overview")
+        try:
+            users = load_users()
+            scores = load_scores()
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Users", len(users))
+            with col2:
+                st.metric("Total Scores", len(scores))
+            with col3:
+                avg_score = sum(s.get("percentage", 0) for s in scores) / len(scores) if scores else 0
+                st.metric("Average Score", f"{avg_score:.1f}%")
+        except:
+            st.error("Error loading system data")
+        
+        st.markdown("---")
+        
+        # User Management
+        st.subheader("👥 User Management")
+        if st.button("📋 Show All Users"):
+            try:
+                users = load_users()
+                if users:
+                    st.write("**All Registered Users:**")
+                    for username, profile_data in users.items():
+                        level = profile_data.get('level', 1)
+                        xp = profile_data.get('xp_points', 0)
+                        quizzes = profile_data.get('total_quizzes', 0)
+                        st.write(f"• **{username}** - Level {level}, {xp} XP, {quizzes} quizzes completed")
+                else:
+                    st.info("No users found")
+            except Exception as e:
+                st.error(f"Error loading users: {e}")
+        
+        # Delete User
+        st.markdown("### 🗑️ Delete User")
+        delete_username = st.text_input("Enter username to delete:", key="admin_delete_user")
+        if st.button("Delete User", type="secondary", key="admin_delete_btn"):
+            if delete_username:
+                try:
+                    if delete_user_profile(delete_username):
+                        st.success(f"✅ User '{delete_username}' deleted successfully!")
+                        st.rerun()
+                    else:
+                        st.error("❌ User not found or deletion failed")
+                except Exception as e:
+                    st.error(f"Error: {e}")
+            else:
+                st.warning("Please enter a username")
+        
+        st.markdown("---")
+        
+        # Leaderboard Management
+        st.subheader("🏆 Leaderboard Management")
+        if st.button("📊 Show Recent Scores"):
+            try:
+                scores = load_scores()
+                if scores:
+                    recent_scores = scores[-10:]  # Last 10 scores
+                    st.write("**Recent Quiz Scores:**")
+                    for score in recent_scores:
+                        name = score.get('name', 'Unknown')
+                        quiz_type = score.get('quiz_type', 'Unknown')
+                        percentage = score.get('percentage', 0)
+                        timestamp = score.get('timestamp', 'Unknown')
+                        st.write(f"• **{name}**: {percentage}% on {quiz_type} quiz ({timestamp})")
+                else:
+                    st.info("No scores found")
+            except Exception as e:
+                st.error(f"Error loading scores: {e}")
+        
+        if st.button("🗑️ Clear All Scores", type="secondary", key="admin_clear_scores"):
+            try:
+                with open("quiz_scores.json", "w", encoding="utf-8") as f:
+                    json.dump([], f, indent=2)
+                load_scores.clear()
+                st.success("✅ All scores cleared!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error clearing scores: {e}")
+        
+        st.markdown("---")
+        st.success("✅ Admin Dashboard loaded successfully!")
     
     elif page == "👤 Profile":
         show_user_profile()
