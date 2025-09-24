@@ -2460,7 +2460,8 @@ def show_enhanced_quiz_questions():
     """, unsafe_allow_html=True)
     
     # Progress bar
-    progress = (current_q + 1) / len(questions)
+    progress = (current_q + 1) / len(questions) if len(questions) > 0 else 0
+    progress = min(max(progress, 0.0), 1.0)  # Ensure progress is between 0 and 1
     st.progress(progress)
     st.markdown(f"**Question {current_q + 1} of {len(questions)}** • **Progress: {progress*100:.0f}%**")
     

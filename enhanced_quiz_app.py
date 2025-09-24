@@ -182,6 +182,30 @@ def calculate_level(xp_points: int) -> int:
     else:
         return min(10 + (xp_points - 4500) // 1000, 50)
 
+def get_xp_needed_for_next_level(current_level: int) -> int:
+    """Get XP needed to reach the next level"""
+    level_thresholds = [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500]
+    if current_level < len(level_thresholds):
+        return level_thresholds[current_level]
+    else:
+        return 4500 + (current_level - 9) * 1000
+
+def get_xp_progress_percentage(xp_points: int, current_level: int) -> float:
+    """Calculate XP progress percentage for current level"""
+    if current_level == 1:
+        current_level_start = 0
+        next_level_threshold = 100
+    elif current_level <= 9:
+        level_thresholds = [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500]
+        current_level_start = level_thresholds[current_level - 1]
+        next_level_threshold = level_thresholds[current_level]
+    else:
+        current_level_start = 4500 + (current_level - 10) * 1000
+        next_level_threshold = 4500 + (current_level - 9) * 1000
+    
+    progress = ((xp_points - current_level_start) / (next_level_threshold - current_level_start)) * 100
+    return min(max(progress, 0), 100)
+
 def get_xp_for_quiz(score: int, total: int, difficulty_bonus: float = 1.0) -> int:
     """Calculate XP earned for a quiz"""
     base_xp = (score / total) * 100
@@ -652,68 +676,120 @@ def get_user_history(name, quiz_type):
     scores = load_scores()
     user_scores = [s for s in scores if s["name"].lower() == name.lower() and s["quiz_type"] == quiz_type]
     used_questions = []
+    
     for score in user_scores:
-        if "questions_used" in score:
+        if "questions_used" in score and isinstance(score["questions_used"], list):
             used_questions.extend(score["questions_used"])
-    return list(set(used_questions))
+    
+    # Remove duplicates and return
+    unique_used = list(set(used_questions))
+    
+    # Limit history to prevent running out of questions (keep last 100 questions)
+    if len(unique_used) > 100:
+        # Keep only the most recent questions by sorting scores by timestamp
+        user_scores.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+        recent_used = []
+        for score in user_scores[:5]:  # Last 5 quizzes
+            if "questions_used" in score and isinstance(score["questions_used"], list):
+                recent_used.extend(score["questions_used"])
+        unique_used = list(set(recent_used))
+    
+    return unique_used
 
-@st.cache_data
 def get_random_questions(quiz_type, num_questions=20, exclude_questions=None):
-    """Get random questions with difficulty distribution"""
+    """Get random questions with difficulty distribution - No caching to ensure randomness"""
     if exclude_questions is None:
         exclude_questions = []
     
     quiz_data = get_quiz_data()
     all_questions = quiz_data[quiz_type]["questions"]
     
-    # Separate questions by difficulty
-    easy_questions = []
-    medium_questions = []
-    hard_questions = []
-    
+    # Create unique question IDs using both question text and index
+    available_questions = []
     for i, q in enumerate(all_questions):
-        question_id = hashlib.md5(q["question"]["english"].encode()).hexdigest()[:8]
-        difficulty = q.get("difficulty", "medium")
+        # Create more unique ID using question text + index + first option
+        question_text = q["question"]["english"]
+        first_option = q["options"]["english"][0] if q["options"]["english"] else ""
+        unique_content = f"{i}_{question_text}_{first_option}"
+        question_id = hashlib.md5(unique_content.encode()).hexdigest()[:12]
         
+        # Only include if not in excluded questions
         if question_id not in exclude_questions:
-            if difficulty == "easy":
-                easy_questions.append((i, question_id, q))
-            elif difficulty == "medium":
-                medium_questions.append((i, question_id, q))
-            elif difficulty == "hard":
-                hard_questions.append((i, question_id, q))
+            difficulty = q.get("difficulty", "medium")
+            available_questions.append((i, question_id, q, difficulty))
     
-    # Select questions according to difficulty distribution
+    # If we don't have enough unique questions, reset the exclusion list partially
+    if len(available_questions) < num_questions:
+        st.warning(f"Only {len(available_questions)} unique questions available. Including some previously seen questions.")
+        # Include all questions but prioritize unseen ones
+        all_with_ids = []
+        for i, q in enumerate(all_questions):
+            question_text = q["question"]["english"]
+            first_option = q["options"]["english"][0] if q["options"]["english"] else ""
+            unique_content = f"{i}_{question_text}_{first_option}"
+            question_id = hashlib.md5(unique_content.encode()).hexdigest()[:12]
+            difficulty = q.get("difficulty", "medium")
+            priority = 0 if question_id in exclude_questions else 1  # Prioritize unseen
+            all_with_ids.append((i, question_id, q, difficulty, priority))
+        
+        # Sort by priority (unseen first) then shuffle within priority groups
+        all_with_ids.sort(key=lambda x: x[4], reverse=True)
+        available_questions = [(i, qid, q, diff) for i, qid, q, diff, _ in all_with_ids]
+    
+    # Separate by difficulty
+    easy_questions = [q for q in available_questions if q[3] == "easy"]
+    medium_questions = [q for q in available_questions if q[3] == "medium"]
+    hard_questions = [q for q in available_questions if q[3] == "hard"]
+    
+    # If no difficulty specified, treat as medium
+    if not easy_questions and not medium_questions and not hard_questions:
+        medium_questions = available_questions
+    
     selected_questions = []
     
-    # Select 6 easy, 8 medium, 6 hard
-    if len(easy_questions) >= 6:
-        selected_questions.extend(random.sample(easy_questions, 6))
-    else:
-        selected_questions.extend(easy_questions)
+    # Target distribution: 6 easy, 8 medium, 6 hard (adjustable based on availability)
+    easy_target = min(6, len(easy_questions))
+    medium_target = min(8, len(medium_questions))
+    hard_target = min(6, len(hard_questions))
     
-    available_medium = [q for q in medium_questions if q not in selected_questions]
-    if len(available_medium) >= 8:
-        selected_questions.extend(random.sample(available_medium, 8))
-    else:
-        selected_questions.extend(available_medium)
+    # Select questions by difficulty
+    if easy_questions and easy_target > 0:
+        selected_questions.extend(random.sample(easy_questions, easy_target))
     
-    available_hard = [q for q in hard_questions if q not in selected_questions]
-    if len(available_hard) >= 6:
-        selected_questions.extend(random.sample(available_hard, 6))
-    else:
-        selected_questions.extend(available_hard)
+    if medium_questions and medium_target > 0:
+        # Avoid duplicates from easy selection
+        available_medium = [q for q in medium_questions if q not in selected_questions]
+        if available_medium:
+            medium_target = min(medium_target, len(available_medium))
+            selected_questions.extend(random.sample(available_medium, medium_target))
     
-    # Fill remaining slots if needed
-    while len(selected_questions) < num_questions:
-        all_available = [q for q in easy_questions + medium_questions + hard_questions if q not in selected_questions]
-        if all_available:
-            selected_questions.extend(random.sample(all_available, min(num_questions - len(selected_questions), len(all_available))))
+    if hard_questions and hard_target > 0:
+        # Avoid duplicates from previous selections
+        available_hard = [q for q in hard_questions if q not in selected_questions]
+        if available_hard:
+            hard_target = min(hard_target, len(available_hard))
+            selected_questions.extend(random.sample(available_hard, hard_target))
+    
+    # Fill remaining slots with any available questions
+    while len(selected_questions) < num_questions and len(selected_questions) < len(available_questions):
+        remaining_questions = [q for q in available_questions if q not in selected_questions]
+        if remaining_questions:
+            additional_needed = min(num_questions - len(selected_questions), len(remaining_questions))
+            selected_questions.extend(random.sample(remaining_questions, additional_needed))
         else:
             break
     
+    # Final shuffle and return
     random.shuffle(selected_questions)
-    return selected_questions[:num_questions]
+    final_questions = selected_questions[:num_questions]
+    
+    # Debug info
+    difficulties = [q[3] for q in final_questions]
+    easy_count = difficulties.count("easy")
+    medium_count = difficulties.count("medium") 
+    hard_count = difficulties.count("hard")
+    
+    return final_questions
 
 # Continue in next part due to length...
 # User Authentication UI
@@ -783,13 +859,6 @@ def show_user_profile():
             <div style="text-align: right;">
                 <p><strong>Quizzes Completed:</strong> {profile.total_quizzes}</p>
                 <p><strong>Current Streak:</strong> {profile.streak_days} days 🔥</p>
-            </div>
-        </div>
-        
-        <div style="margin: 1rem 0;">
-            <p><strong>XP Progress to Next Level:</strong></p>
-            <div style="background: #e0e0e0; border-radius: 10px; height: 20px; overflow: hidden;">
-                <div class="xp-progress" style="width: {min(100, (profile.xp_points % 500) / 5)}%;"></div>
             </div>
         </div>
     </div>
@@ -898,6 +967,10 @@ def show_settings():
         st.markdown("### 🔧 Debug Tools")
         if st.button("🔄 Reset Session State", help="Clear all session data except login"):
             reset_session_state()
+        
+        if st.button("�️ Cleare Quiz History", help="Reset question history to see all questions again"):
+            clear_user_quiz_history(st.session_state.user_profile.username)
+            st.success("Quiz history cleared! You'll now see fresh questions.")
         
         if st.button("📊 Show Session State", help="Display current session state for debugging"):
             st.json(dict(st.session_state))
@@ -1063,6 +1136,13 @@ def show_quiz_interface():
     
     # Show quiz interface if quiz is already started
     if hasattr(st.session_state, 'quiz_started') and st.session_state.quiz_started:
+        # Check if quiz questions have the correct format
+        if hasattr(st.session_state, 'quiz_questions') and st.session_state.quiz_questions:
+            sample_question = st.session_state.quiz_questions[0]
+            if len(sample_question) != 4:
+                st.warning("Detected old quiz format. Restarting quiz with new format...")
+                restart_quiz()
+                st.rerun()
         show_quiz_questions()
         return
     
@@ -1119,7 +1199,7 @@ def start_quiz(quiz_type):
     st.session_state.score = 0
     st.session_state.answers = []
     st.session_state.quiz_questions = selected_questions
-    st.session_state.questions_used = [qid for _, qid, _ in selected_questions]
+    st.session_state.questions_used = [qid for _, qid, _, _ in selected_questions]
     st.session_state.quiz_start_time = time.time()
     st.rerun()
 
@@ -1129,6 +1209,14 @@ def show_quiz_questions():
     questions = st.session_state.quiz_questions
     current_q = st.session_state.current_question
     lang = st.session_state.selected_language
+    
+    # Debug: Check question format
+    if questions and len(questions) > 0:
+        sample_question = questions[0]
+        if len(sample_question) != 4:
+            st.error(f"Question format error: Expected 4 elements, got {len(sample_question)}. Restarting quiz...")
+            restart_quiz()
+            st.rerun()
     
     # Quiz header
     quiz_data = get_quiz_data()
@@ -1141,13 +1229,19 @@ def show_quiz_questions():
     </div>
     """, unsafe_allow_html=True)
     
+    # Check if quiz is complete first
+    if current_q >= len(questions):
+        show_quiz_results()
+        return
+    
     # Progress bar with animation
-    progress = (current_q + 1) / len(questions)
+    progress = min((current_q + 1) / len(questions), 1.0) if len(questions) > 0 else 0.0
     st.progress(progress)
     st.markdown(f"**Question {current_q + 1} of {len(questions)}** • **Progress: {progress*100:.0f}%**")
     
+    # Display current question
     if current_q < len(questions):
-        _, _, question = questions[current_q]
+        _, _, question, _ = questions[current_q]
         
         # Question display with enhanced styling
         difficulty = question.get('difficulty', 'medium')
@@ -1205,13 +1299,15 @@ def show_quiz_questions():
                         st.error("❌ Incorrect. Keep learning!")
                 
                 st.session_state.current_question += 1
-                time.sleep(1)
-                st.rerun()
+                # Check if quiz is complete after incrementing
+                if st.session_state.current_question >= len(questions):
+                    time.sleep(1)
+                    st.rerun()  # This will trigger show_quiz_results()
+                else:
+                    time.sleep(1)
+                    st.rerun()
             elif submit_answer and selected_option is None:
                 st.warning("Please select an answer before submitting!")
-    
-    else:
-        show_quiz_results()
 
 def record_answer(question, options, selected, is_correct, lang):
     """Record quiz answer"""
@@ -1236,6 +1332,20 @@ def reset_session_state():
     for key in keys_to_remove:
         del st.session_state[key]
     st.rerun()
+
+def clear_user_quiz_history(username):
+    """Clear a user's quiz history to allow fresh questions"""
+    scores = load_scores()
+    # Remove questions_used from all user's scores
+    for score in scores:
+        if score.get("name", "").lower() == username.lower():
+            if "questions_used" in score:
+                del score["questions_used"]
+    
+    # Save updated scores
+    with open("quiz_scores.json", "w", encoding="utf-8") as f:
+        json.dump(scores, f, ensure_ascii=False, indent=2)
+    load_scores.clear()  # Clear cache
 
 def show_quiz_results():
     """Enhanced quiz results with achievements and certificates"""
