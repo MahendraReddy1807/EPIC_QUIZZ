@@ -7,15 +7,15 @@ import os
 
 # Force page configuration first
 st.set_page_config(
-    page_title="Epic Quiz App - Enhanced v2.1",
+    page_title="Epic Quiz App - Enhanced v2.2",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # Show update message
-st.markdown("# 🚀 Epic Quiz App - Enhanced v2.1")
-st.success("✅ Admin Dashboard is now working! Version updated successfully.")
+st.markdown("# 🚀 Epic Quiz App - Enhanced v2.2")
+st.success("✅ Enhanced quiz experience with user profiles and achievements!")
 st.markdown("---")
 
 # Import and run the enhanced version
