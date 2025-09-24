@@ -848,21 +848,18 @@ def show_user_profile():
     """Display user profile with stats and achievements"""
     profile = st.session_state.user_profile
     
-    st.markdown(f"""
-    <div class="profile-card">
-        <h2>👤 {profile.username}'s Profile</h2>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0;">
-            <div>
-                <h3>Level {profile.level}</h3>
-                <p>{profile.xp_points} XP Points</p>
-            </div>
-            <div style="text-align: right;">
-                <p><strong>Quizzes Completed:</strong> {profile.total_quizzes}</p>
-                <p><strong>Current Streak:</strong> {profile.streak_days} days 🔥</p>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # Use Streamlit native components instead of HTML to avoid rendering issues
+    st.subheader(f"👤 {profile.username}'s Profile")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.metric("Level", profile.level)
+        st.metric("XP Points", profile.xp_points)
+    
+    with col2:
+        st.metric("Quizzes Completed", profile.total_quizzes)
+        st.metric("Current Streak", f"{profile.streak_days} days 🔥")
     
     # Achievements section
     if profile.achievements:
@@ -871,13 +868,10 @@ def show_user_profile():
         for i, achievement_id in enumerate(profile.achievements):
             achievement = AchievementSystem.ACHIEVEMENTS[achievement_id]
             with cols[i % 3]:
-                st.markdown(f"""
-                <div class="achievement-card" style="margin: 0.5rem 0;">
-                    <h4>{achievement['name']}</h4>
-                    <p style="font-size: 0.9rem; margin: 0;">{achievement['description']}</p>
-                    <p style="font-size: 0.8rem; margin: 0.5rem 0 0 0;">+{achievement['xp']} XP</p>
-                </div>
-                """, unsafe_allow_html=True)
+                with st.container():
+                    st.success(f"**{achievement['name']}**")
+                    st.caption(achievement['description'])
+                    st.caption(f"+{achievement['xp']} XP")
     else:
         st.info("Complete quizzes to earn achievements! 🎯")
 
