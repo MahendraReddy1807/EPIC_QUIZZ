@@ -25,6 +25,8 @@ def init_session_state():
         st.session_state.font_size = 'medium'
     if 'sound_enabled' not in st.session_state:
         st.session_state.sound_enabled = True
+    if 'admin_logged_in' not in st.session_state:
+        st.session_state.admin_logged_in = False
 
 # User Profile Management
 class UserProfile:
@@ -115,7 +117,8 @@ class AchievementSystem:
         'bilingual': {'name': '🌍 Polyglot', 'description': 'Take quizzes in both languages', 'xp': 250},
         'epic_scholar': {'name': '📚 Epic Scholar', 'description': 'Complete both Mahabharata and Ramayana quizzes', 'xp': 400},
         'level_5': {'name': '🎖️ Veteran', 'description': 'Reach Level 5', 'xp': 500},
-        'level_10': {'name': '👑 Master', 'description': 'Reach Level 10', 'xp': 1000}
+        'level_10': {'name': '👑 Master', 'description': 'Reach Level 10', 'xp': 1000},
+        'admin_access': {'name': '👑 Administrator', 'description': 'System Administrator Access', 'xp': 0}
     }
     
     @staticmethod
@@ -795,10 +798,15 @@ def get_random_questions(quiz_type, num_questions=20, exclude_questions=None):
 # User Authentication UI
 def show_login_page():
     """Display login/registration page"""
-    st.markdown("## 👤 Welcome to Epic Quiz App")
-    st.markdown("Please login or create an account to track your progress and earn achievements!")
+    # Create centered header with proper spacing from toolbar
+    st.markdown("""
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #667eea; margin-bottom: 0.5rem;">📚 Epic Quiz App</h1>
+        <p style="color: #6c757d; font-size: 1.1rem;">Please login or create an account to track your progress and earn achievements!</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    tab1, tab2 = st.tabs(["🔑 Login", "📝 Register"])
+    tab1, tab2, tab3 = st.tabs(["🔑 Login", "📝 Register", "👑 Admin"])
     
     with tab1:
         st.subheader("Login to Your Account")
@@ -842,6 +850,349 @@ def show_login_page():
                         st.error("Username already exists. Please choose a different one.")
             else:
                 st.warning("Please enter a username.")
+    
+    with tab3:
+        st.subheader("🔐 Admin Access")
+        admin_username = st.text_input("Admin Username", key="admin_username", placeholder="Enter admin username")
+        admin_password = st.text_input("Admin Password", key="admin_password", type="password", placeholder="Enter admin password")
+        
+        if st.button("Admin Login", key="admin_login_btn", use_container_width=True):
+            if admin_username == "Mahi07" and admin_password == "1477":
+                st.session_state.admin_logged_in = True
+                st.session_state.user_profile = create_admin_profile()
+                st.success("Welcome Admin! 👑")
+                st.balloons()
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.error("Invalid admin credentials!")
+        
+        st.info("🔒 Admin access is restricted to authorized personnel only.")
+
+# Admin Functions
+def create_admin_profile():
+    """Create admin profile"""
+    admin = UserProfile("Admin_Mahi07")
+    admin.level = 999
+    admin.xp_points = 999999
+    admin.total_quizzes = 0
+    admin.achievements = ["admin_access"]
+    admin.streak_days = 365
+    return admin
+
+def delete_user_from_leaderboard(username):
+    """Delete user from leaderboard and scores"""
+    scores = load_scores()
+    original_count = len(scores)
+    scores = [s for s in scores if s.get("name", "").lower() != username.lower()]
+    
+    if len(scores) < original_count:
+        with open("quiz_scores.json", "w", encoding="utf-8") as f:
+            json.dump(scores, f, ensure_ascii=False, indent=2)
+        load_scores.clear()
+        return True
+    return False
+
+def delete_user_profile(username):
+    """Delete user profile completely"""
+    users = load_users()
+    deleted = False
+    
+    # Find and delete user (case insensitive)
+    for stored_username in list(users.keys()):
+        if stored_username.lower() == username.lower():
+            del users[stored_username]
+            deleted = True
+            break
+    
+    if deleted:
+        save_users(users)
+        # Also delete from leaderboard
+        delete_user_from_leaderboard(username)
+        return True
+    return False
+
+def get_all_users_data():
+    """Get comprehensive data for all users"""
+    users = load_users()
+    scores = load_scores()
+    
+    user_data = []
+    for username, profile_data in users.items():
+        profile = UserProfile.from_dict(profile_data)
+        user_scores = [s for s in scores if s.get("name", "").lower() == username.lower()]
+        
+        # Calculate stats
+        total_attempts = len(user_scores)
+        avg_score = sum(s.get("percentage", 0) for s in user_scores) / total_attempts if total_attempts > 0 else 0
+        best_score = max((s.get("percentage", 0) for s in user_scores), default=0)
+        last_activity = max((s.get("timestamp", "") for s in user_scores), default="Never")
+        
+        user_data.append({
+            "username": username,
+            "level": profile.level,
+            "xp_points": profile.xp_points,
+            "total_quizzes": profile.total_quizzes,
+            "achievements": len(profile.achievements),
+            "streak_days": profile.streak_days,
+            "total_attempts": total_attempts,
+            "avg_score": round(avg_score, 1),
+            "best_score": best_score,
+            "last_activity": last_activity,
+            "created_date": profile.created_date
+        })
+    
+    return user_data
+
+def show_admin_dashboard():
+    """Display comprehensive admin dashboard"""
+    try:
+        st.markdown("# 👑 Admin Dashboard")
+        st.markdown("Welcome to the admin control panel!")
+        st.markdown("---")
+        
+        # Admin navigation
+        admin_tab = st.selectbox(
+            "Select Admin Function",
+            ["📊 Overview", "👥 User Management", "🏆 Leaderboard Management", "📈 Analytics", "🔧 System Tools"],
+            key="admin_nav"
+        )
+        
+        if admin_tab == "📊 Overview":
+            show_admin_overview()
+        elif admin_tab == "👥 User Management":
+            show_user_management()
+        elif admin_tab == "🏆 Leaderboard Management":
+            show_leaderboard_management()
+        elif admin_tab == "� AnaTlytics":
+            show_admin_analytics()
+        elif admin_tab == "🔧 System Tools":
+            show_system_tools()
+            
+    except Exception as e:
+        st.error(f"Error in admin dashboard: {e}")
+        st.error("Please check the logs for more details")
+
+def show_admin_overview():
+    """Show admin overview dashboard"""
+    st.subheader("📊 System Overview")
+    
+    # Get system stats
+    users = load_users()
+    scores = load_scores()
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Users", len(users))
+    
+    with col2:
+        st.metric("Total Quiz Attempts", len(scores))
+    
+    with col3:
+        active_users = len(set(s.get("name", "") for s in scores if s.get("timestamp", "").startswith("2024")))
+        st.metric("Active Users (2024)", active_users)
+    
+    with col4:
+        avg_score = sum(s.get("percentage", 0) for s in scores) / len(scores) if scores else 0
+        st.metric("Average Score", f"{avg_score:.1f}%")
+    
+    # Recent activity
+    st.subheader("🕒 Recent Activity")
+    if scores:
+        recent_scores = sorted(scores, key=lambda x: x.get("timestamp", ""), reverse=True)[:10]
+        for score in recent_scores:
+            st.write(f"**{score.get('name', 'Unknown')}** - {score.get('quiz_type', 'Unknown').title()} Quiz - {score.get('percentage', 0)}% - {score.get('timestamp', 'Unknown time')}")
+    else:
+        st.info("No recent activity")
+
+def show_user_management():
+    """Show user management interface"""
+    st.subheader("👥 User Management")
+    
+    # Get all users data
+    user_data = get_all_users_data()
+    
+    if not user_data:
+        st.info("No users found")
+        return
+    
+    # Display users table
+    df = pd.DataFrame(user_data)
+    st.dataframe(df, use_container_width=True)
+    
+    # User actions
+    st.subheader("🔧 User Actions")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### View User Profile")
+        selected_user = st.selectbox("Select User", [u["username"] for u in user_data], key="view_user")
+        
+        if st.button("View Profile", key="view_profile_btn"):
+            user_profile_data = next((u for u in user_data if u["username"] == selected_user), None)
+            if user_profile_data:
+                st.json(user_profile_data)
+    
+    with col2:
+        st.markdown("#### Delete User")
+        delete_user = st.selectbox("Select User to Delete", [u["username"] for u in user_data], key="delete_user")
+        
+        if st.button("🗑️ Delete User", key="delete_user_btn", type="secondary"):
+            if delete_user_profile(delete_user):
+                st.success(f"User '{delete_user}' deleted successfully!")
+                st.rerun()
+            else:
+                st.error("Failed to delete user")
+
+def show_leaderboard_management():
+    """Show leaderboard management interface"""
+    st.subheader("🏆 Leaderboard Management")
+    
+    scores = load_scores()
+    if not scores:
+        st.info("No scores found")
+        return
+    
+    # Display current leaderboard
+    df = pd.DataFrame(scores)
+    df_sorted = df.sort_values(['percentage', 'timestamp'], ascending=[False, False])
+    
+    st.markdown("#### Current Leaderboard")
+    st.dataframe(df_sorted[['name', 'quiz_type', 'score', 'total', 'percentage', 'timestamp']], use_container_width=True)
+    
+    # Leaderboard actions
+    st.subheader("🔧 Leaderboard Actions")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### Remove User from Leaderboard")
+        users_in_leaderboard = list(set(s.get("name", "") for s in scores))
+        selected_user = st.selectbox("Select User", users_in_leaderboard, key="remove_from_leaderboard")
+        
+        if st.button("Remove from Leaderboard", key="remove_leaderboard_btn", type="secondary"):
+            if delete_user_from_leaderboard(selected_user):
+                st.success(f"Removed '{selected_user}' from leaderboard!")
+                st.rerun()
+            else:
+                st.error("Failed to remove user from leaderboard")
+    
+    with col2:
+        st.markdown("#### Clear All Scores")
+        if st.button("🗑️ Clear All Scores", key="clear_all_scores", type="secondary"):
+            if st.button("⚠️ Confirm Clear All", key="confirm_clear_all"):
+                with open("quiz_scores.json", "w", encoding="utf-8") as f:
+                    json.dump([], f, indent=2)
+                load_scores.clear()
+                st.success("All scores cleared!")
+                st.rerun()
+
+def show_admin_analytics():
+    """Show detailed analytics"""
+    st.subheader("📈 Analytics Dashboard")
+    
+    scores = load_scores()
+    users = load_users()
+    
+    if not scores:
+        st.info("No data available for analytics")
+        return
+    
+    # Quiz type distribution
+    st.markdown("#### Quiz Type Distribution")
+    quiz_types = {}
+    for score in scores:
+        quiz_type = score.get("quiz_type", "Unknown")
+        quiz_types[quiz_type] = quiz_types.get(quiz_type, 0) + 1
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.bar_chart(quiz_types)
+    
+    # Score distribution
+    with col2:
+        st.markdown("#### Score Distribution")
+        score_ranges = {"0-20%": 0, "21-40%": 0, "41-60%": 0, "61-80%": 0, "81-100%": 0}
+        for score in scores:
+            percentage = score.get("percentage", 0)
+            if percentage <= 20:
+                score_ranges["0-20%"] += 1
+            elif percentage <= 40:
+                score_ranges["21-40%"] += 1
+            elif percentage <= 60:
+                score_ranges["41-60%"] += 1
+            elif percentage <= 80:
+                score_ranges["61-80%"] += 1
+            else:
+                score_ranges["81-100%"] += 1
+        
+        st.bar_chart(score_ranges)
+    
+    # Top performers
+    st.markdown("#### Top Performers")
+    df = pd.DataFrame(scores)
+    if not df.empty:
+        top_scores = df.nlargest(10, 'percentage')[['name', 'quiz_type', 'percentage', 'timestamp']]
+        st.dataframe(top_scores, use_container_width=True)
+
+def show_system_tools():
+    """Show system management tools"""
+    st.subheader("🔧 System Tools")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### Data Management")
+        
+        if st.button("📥 Export All Data", key="export_data"):
+            users = load_users()
+            scores = load_scores()
+            
+            export_data = {
+                "users": users,
+                "scores": scores,
+                "export_timestamp": datetime.datetime.now().isoformat()
+            }
+            
+            st.download_button(
+                label="Download Data Export",
+                data=json.dumps(export_data, indent=2, ensure_ascii=False),
+                file_name=f"quiz_app_data_export_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                mime="application/json"
+            )
+        
+        if st.button("🔄 Reset All Data", key="reset_all_data", type="secondary"):
+            if st.button("⚠️ Confirm Reset", key="confirm_reset_all"):
+                # Reset all data files
+                with open("quiz_scores.json", "w", encoding="utf-8") as f:
+                    json.dump([], f, indent=2)
+                with open("user_profiles.json", "w", encoding="utf-8") as f:
+                    json.dump({}, f, indent=2)
+                load_scores.clear()
+                load_users.clear()
+                st.success("All data reset successfully!")
+                st.rerun()
+    
+    with col2:
+        st.markdown("#### System Information")
+        
+        users = load_users()
+        scores = load_scores()
+        
+        st.info(f"""
+        **System Status:**
+        - Total Users: {len(users)}
+        - Total Scores: {len(scores)}
+        - Data Files: ✅ Accessible
+        - Admin Access: ✅ Active
+        """)
+        
+        if st.button("🧹 Clear Cache", key="clear_cache"):
+            load_scores.clear()
+            load_users.clear()
+            st.success("Cache cleared!")
 
 # User Profile Display
 def show_user_profile():
@@ -1012,6 +1363,12 @@ def main():
         font-family: 'Source Sans Pro', sans-serif;
     }
     
+    /* Keep toolbar visible but move content down 3cm */
+    .main .block-container {
+        padding-top: 3cm !important;
+        max-width: 1200px;
+    }
+    
     /* Metric containers */
     [data-testid="metric-container"] {
         background-color: #f8f9fa;
@@ -1079,6 +1436,27 @@ def main():
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         border-radius: 10px;
     }
+    
+    /* Keep Streamlit toolbar visible */
+    .stApp > header {
+        display: block !important;
+    }
+    
+    /* Ensure proper spacing from top toolbar */
+    .stApp > div:first-child {
+        margin-top: 0 !important;
+    }
+    
+    /* Compact tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0;
+        margin-top: 0.5rem;
+    }
+    
+    /* Compact form elements */
+    .stTextInput > div > div > input {
+        padding: 0.5rem;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -1104,9 +1482,15 @@ def main():
         
         st.markdown("---")
         
+        # Check if user is admin
+        if hasattr(st.session_state, 'admin_logged_in') and st.session_state.admin_logged_in:
+            nav_options = ["� AdPmin Dashboard", "🎯 Take Quiz", "👤 Profile", "🏆 Leaderboard", "⚙️ Settings", "📜 About", "🚪 Logout"]
+        else:
+            nav_options = ["🎯 Take Quiz", "👤 Profile", "🏆 Leaderboard", "⚙️ Settings", "📜 About", "🚪 Logout"]
+        
         page = st.radio(
             "Navigation",
-            ["🎯 Take Quiz", "👤 Profile", "🏆 Leaderboard", "⚙️ Settings", "📜 About", "🚪 Logout"],
+            nav_options,
             key="nav_radio"
         )
     
@@ -1116,6 +1500,13 @@ def main():
         st.success("Logged out successfully!")
         time.sleep(1)
         st.rerun()
+    
+    elif page == "👑 Admin Dashboard":
+        if hasattr(st.session_state, 'admin_logged_in') and st.session_state.admin_logged_in:
+            show_admin_dashboard()
+        else:
+            st.error("❌ Admin access denied. Please login as admin first.")
+            st.info("💡 Use the Admin tab in the login page to access admin features.")
     
     elif page == "👤 Profile":
         show_user_profile()
