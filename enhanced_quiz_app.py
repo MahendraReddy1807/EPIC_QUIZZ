@@ -945,57 +945,125 @@ def get_all_users_data():
     return user_data
 
 def show_admin_dashboard():
-    """Display comprehensive admin dashboard"""
+    """Display admin dashboard - MINIMAL VERSION"""
+    st.write("# 👑 ADMIN DASHBOARD")
+    st.write("Welcome Admin Mahi07!")
+    st.write("---")
+    
+    st.write("## 📊 Quick Stats")
+    
+    # Basic stats
     try:
-        st.markdown("# 👑 Admin Dashboard")
-        st.markdown("Welcome to the admin control panel!")
-        st.markdown("---")
-        
-        # Admin navigation
-        admin_tab = st.selectbox(
-            "Select Admin Function",
-            ["📊 Overview", "👥 User Management", "🏆 Leaderboard Management", "📈 Analytics", "🔧 System Tools"],
-            key="admin_nav"
-        )
-        
-        if admin_tab == "📊 Overview":
-            show_admin_overview()
-        elif admin_tab == "👥 User Management":
-            show_user_management()
-        elif admin_tab == "🏆 Leaderboard Management":
-            show_leaderboard_management()
-        elif admin_tab == "� AnaTlytics":
-            show_admin_analytics()
-        elif admin_tab == "🔧 System Tools":
-            show_system_tools()
-            
-    except Exception as e:
-        st.error(f"Error in admin dashboard: {e}")
-        st.error("Please check the logs for more details")
+        users = load_users()
+        scores = load_scores()
+        st.write(f"**Users:** {len(users)}")
+        st.write(f"**Quiz Attempts:** {len(scores)}")
+    except:
+        st.write("**Users:** 0")
+        st.write("**Quiz Attempts:** 0")
+    
+    st.write("---")
+    
+    # Admin functions
+    st.write("## 🔧 Admin Functions")
+    
+    if st.button("📋 Show All Users"):
+        try:
+            users = load_users()
+            if users:
+                st.write("**All Users:**")
+                for username, profile_data in users.items():
+                    st.write(f"- **{username}** (Level: {profile_data.get('level', 1)}, XP: {profile_data.get('xp_points', 0)})")
+            else:
+                st.write("No users found")
+        except Exception as e:
+            st.error(f"Error: {e}")
+    
+    if st.button("🏆 Show Leaderboard"):
+        try:
+            scores = load_scores()
+            if scores:
+                st.write("**Recent Scores:**")
+                for score in scores[-10:]:  # Last 10 scores
+                    st.write(f"- **{score.get('name', 'Unknown')}**: {score.get('percentage', 0)}% ({score.get('quiz_type', 'Unknown')})")
+            else:
+                st.write("No scores found")
+        except Exception as e:
+            st.error(f"Error: {e}")
+    
+    st.write("---")
+    
+    # Delete functions
+    st.write("## 🗑️ Delete Functions")
+    
+    delete_username = st.text_input("Enter username to delete:", key="delete_input")
+    
+    if st.button("Delete User", type="secondary"):
+        if delete_username:
+            try:
+                if delete_user_profile(delete_username):
+                    st.success(f"User {delete_username} deleted!")
+                    st.rerun()
+                else:
+                    st.error("User not found or deletion failed")
+            except Exception as e:
+                st.error(f"Error deleting user: {e}")
+        else:
+            st.warning("Please enter a username")
+    
+    if st.button("Clear All Scores", type="secondary"):
+        try:
+            with open("quiz_scores.json", "w") as f:
+                json.dump([], f)
+            load_scores.clear()
+            st.success("All scores cleared!")
+            st.rerun()
+        except Exception as e:
+            st.error(f"Error clearing scores: {e}")
+    
+    st.write("---")
+    st.write("✅ Admin Dashboard Loaded Successfully")
 
 def show_admin_overview():
     """Show admin overview dashboard"""
-    st.subheader("📊 System Overview")
-    
-    # Get system stats
-    users = load_users()
-    scores = load_scores()
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric("Total Users", len(users))
-    
-    with col2:
-        st.metric("Total Quiz Attempts", len(scores))
-    
-    with col3:
-        active_users = len(set(s.get("name", "") for s in scores if s.get("timestamp", "").startswith("2024")))
-        st.metric("Active Users (2024)", active_users)
-    
-    with col4:
-        avg_score = sum(s.get("percentage", 0) for s in scores) / len(scores) if scores else 0
-        st.metric("Average Score", f"{avg_score:.1f}%")
+    try:
+        st.subheader("📊 System Overview")
+        
+        # Get system stats
+        users = load_users()
+        scores = load_scores()
+        
+        st.success(f"✅ Loaded {len(users)} users and {len(scores)} scores")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Users", len(users))
+        
+        with col2:
+            st.metric("Total Quiz Attempts", len(scores))
+        
+        with col3:
+            active_users = len(set(s.get("name", "") for s in scores if s.get("timestamp", "").startswith("2024")))
+            st.metric("Active Users (2024)", active_users)
+        
+        with col4:
+            avg_score = sum(s.get("percentage", 0) for s in scores) / len(scores) if scores else 0
+            st.metric("Average Score", f"{avg_score:.1f}%")
+        
+        # Recent activity
+        st.subheader("🕒 Recent Activity")
+        if scores:
+            recent_scores = sorted(scores, key=lambda x: x.get("timestamp", ""), reverse=True)[:5]
+            for score in recent_scores:
+                st.write(f"**{score.get('name', 'Unknown')}** - {score.get('quiz_type', 'Unknown').title()} Quiz - {score.get('percentage', 0)}%")
+        else:
+            st.info("No recent activity")
+            
+    except Exception as e:
+        st.error(f"Error in admin overview: {e}")
+        import traceback
+        st.code(traceback.format_exc())
     
     # Recent activity
     st.subheader("🕒 Recent Activity")
@@ -1502,7 +1570,11 @@ def main():
         st.rerun()
     
     elif page == "👑 Admin Dashboard":
+        st.write("DEBUG: Admin Dashboard page selected")
+        st.write(f"DEBUG: admin_logged_in = {getattr(st.session_state, 'admin_logged_in', 'NOT SET')}")
+        
         if hasattr(st.session_state, 'admin_logged_in') and st.session_state.admin_logged_in:
+            st.write("DEBUG: Calling show_admin_dashboard()")
             show_admin_dashboard()
         else:
             st.error("❌ Admin access denied. Please login as admin first.")
