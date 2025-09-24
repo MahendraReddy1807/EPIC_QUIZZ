@@ -892,34 +892,9 @@ def show_settings():
             'forest': '🌲 Forest Theme'
         }
         
-        selected_theme = st.selectbox(
-            "Choose Theme",
-            options=list(theme_options.keys()),
-            format_func=lambda x: theme_options[x],
-            index=list(theme_options.keys()).index(st.session_state.theme)
-        )
+        st.info("🎨 Theme customization temporarily disabled for better consistency across platforms")
         
-        if selected_theme != st.session_state.theme:
-            st.session_state.theme = selected_theme
-            st.rerun()
-        
-        font_size_options = {
-            'small': '📝 Small',
-            'medium': '📄 Medium',
-            'large': '📰 Large',
-            'extra-large': '📊 Extra Large'
-        }
-        
-        selected_font_size = st.selectbox(
-            "Font Size",
-            options=list(font_size_options.keys()),
-            format_func=lambda x: font_size_options[x],
-            index=list(font_size_options.keys()).index(st.session_state.font_size)
-        )
-        
-        if selected_font_size != st.session_state.font_size:
-            st.session_state.font_size = selected_font_size
-            st.rerun()
+        st.info("📝 Font size customization temporarily disabled for better consistency")
     
     with col2:
         st.markdown("### ♿ Accessibility Settings")
@@ -1029,9 +1004,83 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Apply theme CSS
-    theme_css = get_theme_css(st.session_state.theme, st.session_state.font_size, st.session_state.accessibility_mode)
-    st.markdown(theme_css, unsafe_allow_html=True)
+    # Apply consistent styling for both localhost and cloud
+    st.markdown("""
+    <style>
+    /* Base app styling */
+    .stApp {
+        font-family: 'Source Sans Pro', sans-serif;
+    }
+    
+    /* Metric containers */
+    [data-testid="metric-container"] {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    /* Button consistency */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Success/Info boxes */
+    .stSuccess, .stInfo, .stWarning, .stError {
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    /* Form styling */
+    .stForm {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    /* Radio button styling */
+    .stRadio > div {
+        background-color: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 6px;
+        margin: 0.25rem 0;
+        border: 1px solid #dee2e6;
+    }
+    
+    /* Sidebar consistency */
+    .css-1d391kg {
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
+    }
+    
+    /* Header styling */
+    h1, h2, h3 {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    
+    /* Progress bar */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
     # Check if user is logged in
     if not st.session_state.user_profile:
