@@ -716,8 +716,7 @@ def get_random_questions(quiz_type, num_questions=20, exclude_questions=None):
     return selected_questions[:num_questions]
 
 # Continue in next part due to length...
-# Us
-er Authentication UI
+# User Authentication UI
 def show_login_page():
     """Display login/registration page"""
     st.markdown("## 👤 Welcome to Epic Quiz App")
@@ -895,6 +894,13 @@ def show_settings():
                 st.session_state.user_profile.preferred_language = new_lang
                 update_user_profile(st.session_state.user_profile)
                 st.success("Language preference updated!")
+        
+        st.markdown("### 🔧 Debug Tools")
+        if st.button("🔄 Reset Session State", help="Clear all session data except login"):
+            reset_session_state()
+        
+        if st.button("📊 Show Session State", help="Display current session state for debugging"):
+            st.json(dict(st.session_state))
 
 # Enhanced Leaderboard (simplified version)
 def display_enhanced_leaderboard():
@@ -1055,49 +1061,49 @@ def show_quiz_interface():
     """Enhanced quiz interface with gamification"""
     profile = st.session_state.user_profile
     
+    # Show quiz interface if quiz is already started
+    if hasattr(st.session_state, 'quiz_started') and st.session_state.quiz_started:
+        show_quiz_questions()
+        return
+    
+    # Initialize language selection state if not present
+    if 'selected_language' not in st.session_state:
+        st.session_state.selected_language = profile.preferred_language
+    
     # Language selection (use preferred language as default)
     st.markdown("### 🌐 Select Quiz Language")
     col1, col2 = st.columns(2)
     
-    default_lang = profile.preferred_language
-    
     with col1:
-        if st.button("English", key="lang_en", use_container_width=True, 
-                    type="primary" if default_lang == "english" else "secondary"):
+        if st.button("English", key="enhanced_lang_en", use_container_width=True, 
+                    type="primary" if st.session_state.selected_language == "english" else "secondary"):
             st.session_state.selected_language = "english"
+            st.rerun()
     
     with col2:
-        if st.button("తెలుగు (Telugu)", key="lang_te", use_container_width=True,
-                    type="primary" if default_lang == "telugu" else "secondary"):
+        if st.button("తెలుగు (Telugu)", key="enhanced_lang_te", use_container_width=True,
+                    type="primary" if st.session_state.selected_language == "telugu" else "secondary"):
             st.session_state.selected_language = "telugu"
+            st.rerun()
     
-    # Auto-select preferred language if not already selected
-    if not hasattr(st.session_state, 'selected_language'):
-        st.session_state.selected_language = default_lang
+    # Show selected language and quiz selection
+    lang_display = "English" if st.session_state.selected_language == "english" else "Telugu"
+    st.success(f"✅ Selected Language: {lang_display}")
     
-    # Show selected language
-    if hasattr(st.session_state, 'selected_language'):
-        lang_display = "English" if st.session_state.selected_language == "english" else "Telugu"
-        st.success(f"✅ Selected Language: {lang_display}")
-        
-        # Quiz selection
-        st.subheader("📖 Choose Your Epic Adventure")
-        st.info(f"Quiz will be displayed in: **{lang_display}**")
-        st.info("📊 **Difficulty Distribution**: 6 Easy + 8 Medium + 6 Hard questions (20 total)")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            if st.button("🏹 Mahabharata Quiz", key="maha", use_container_width=True):
-                start_quiz("mahabharata")
-        
-        with col2:
-            if st.button("🏺 Ramayana Quiz", key="rama", use_container_width=True):
-                start_quiz("ramayana")
-        
-        # Show quiz interface if quiz is started
-        if hasattr(st.session_state, 'quiz_started') and st.session_state.quiz_started:
-            show_quiz_questions()
+    # Quiz selection
+    st.subheader("📖 Choose Your Epic Adventure")
+    st.info(f"Quiz will be displayed in: **{lang_display}**")
+    st.info("📊 **Difficulty Distribution**: 6 Easy + 8 Medium + 6 Hard questions (20 total)")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("🏹 Mahabharata Quiz", key="enhanced_maha", use_container_width=True):
+            start_quiz("mahabharata")
+    
+    with col2:
+        if st.button("🏺 Ramayana Quiz", key="enhanced_rama", use_container_width=True):
+            start_quiz("ramayana")
 
 def start_quiz(quiz_type):
     """Start a new quiz with enhanced features"""
@@ -1160,11 +1166,11 @@ def show_quiz_questions():
         # Options with enhanced styling
         options = question["options"][lang]
         
-        with st.form(key=f"question_form_{current_q}"):
+        with st.form(key=f"enhanced_question_form_{current_q}"):
             selected_option = st.radio(
                 "Choose your answer:",
                 options,
-                key=f"q_{current_q}",
+                key=f"enhanced_q_{current_q}",
                 index=None
             )
             
@@ -1222,6 +1228,14 @@ def restart_quiz():
     for key in ['quiz_started', 'selected_quiz', 'current_question', 'score', 'answers', 'quiz_questions', 'questions_used', 'quiz_start_time']:
         if key in st.session_state:
             del st.session_state[key]
+
+def reset_session_state():
+    """Reset all session state for debugging"""
+    keys_to_keep = ['user_profile']  # Keep user logged in
+    keys_to_remove = [key for key in st.session_state.keys() if key not in keys_to_keep]
+    for key in keys_to_remove:
+        del st.session_state[key]
+    st.rerun()
 
 def show_quiz_results():
     """Enhanced quiz results with achievements and certificates"""

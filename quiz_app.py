@@ -38,7 +38,7 @@ class UserProfile:
         self.achievements = []
         self.streak_days = 0
         self.last_quiz_date = None
-        self.xp_points = 0
+        self.xp_points = 50  # Give new users 50 starting XP to show progress bar
         self.level = 1
         self.preferred_language = 'english'
         self.quiz_history = []
@@ -196,7 +196,8 @@ def calculate_xp_progress(profile: UserProfile) -> float:
     if next_level_xp == current_level_xp:
         return 100.0
     progress = ((profile.xp_points - current_level_xp) / (next_level_xp - current_level_xp)) * 100
-    return min(100.0, max(0.0, progress))
+    # Ensure minimum 2% width so progress bar is always visible
+    return min(100.0, max(2.0, progress))
 
 def get_xp_progress_text(profile: UserProfile) -> str:
     """Get XP progress text for display"""
@@ -204,7 +205,11 @@ def get_xp_progress_text(profile: UserProfile) -> str:
     current_level_xp = ((profile.level - 1) * 500)
     current_progress = profile.xp_points - current_level_xp
     needed_for_next = next_level_xp - current_level_xp
-    return f"{current_progress} / {needed_for_next} XP to Level {profile.level + 1}"
+    
+    if profile.xp_points == 0:
+        return f"Complete your first quiz to start earning XP! (0 / {needed_for_next} XP to Level {profile.level + 1})"
+    else:
+        return f"{current_progress} / {needed_for_next} XP to Level {profile.level + 1}"
 
 # Cache questions to avoid reloading - using fast questions for better performance
 @st.cache_data
@@ -1617,10 +1622,9 @@ def main():
             </div>
             """, unsafe_allow_html=True)
             
-            # XP Progress bar
-            next_level_xp = (st.session_state.user_profile.level * 500)
-            current_level_xp = ((st.session_state.user_profile.level - 1) * 500)
-            progress = min(100, ((st.session_state.user_profile.xp_points - current_level_xp) / (next_level_xp - current_level_xp)) * 100)
+            # XP Progress bar using consistent helper functions
+            progress = calculate_xp_progress(st.session_state.user_profile)
+            progress_text = get_xp_progress_text(st.session_state.user_profile)
             
             st.markdown(f"""
             <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
@@ -1632,7 +1636,7 @@ def main():
                     <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: {progress}%; transition: width 0.3s ease;"></div>
                 </div>
                 <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 0.3rem; text-align: center;">
-                    {st.session_state.user_profile.xp_points - current_level_xp} / {next_level_xp - current_level_xp} XP to Level {st.session_state.user_profile.level + 1}
+                    {progress_text}
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -1708,12 +1712,7 @@ def main():
         elif page == "About":
             show_classic_about()
     
-    # Sidebar for navigation - Always in English
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Choose an option:", ["Take Quiz", "Leaderboard", "About"])
-    
-    # Performance indicator
-    st.sidebar.markdown("---")
+
     st.sidebar.caption("⚡ Fast Mode: Optimized for speed")
     
     if page == "Take Quiz":
@@ -1743,7 +1742,7 @@ def main():
         
         # User name input - Always in English interface
         st.subheader("👤 Enter Your Name")
-        user_name = st.text_input("Name:", placeholder="Enter your name here...")
+        user_name = st.text_input("Name:", placeholder="Enter your name here...", key="main_user_name")
         
         if user_name:
             # Quiz selection - Interface always in English
@@ -2315,12 +2314,12 @@ def show_enhanced_quiz_interface():
     default_lang = profile.preferred_language
     
     with col1:
-        if st.button("English", key="lang_en", use_container_width=True, 
+        if st.button("English", key="enhanced_lang_en", use_container_width=True, 
                     type="primary" if default_lang == "english" else "secondary"):
             st.session_state.selected_language = "english"
     
     with col2:
-        if st.button("తెలుగు (Telugu)", key="lang_te", use_container_width=True,
+        if st.button("తెలుగు (Telugu)", key="enhanced_lang_te", use_container_width=True,
                     type="primary" if default_lang == "telugu" else "secondary"):
             st.session_state.selected_language = "telugu"
     
@@ -2346,11 +2345,11 @@ def show_enhanced_quiz_interface():
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("🏹 Mahabharata Quiz", key="maha", use_container_width=True):
+            if st.button("🏹 Mahabharata Quiz", key="enhanced_maha", use_container_width=True):
                 start_enhanced_quiz("mahabharata")
         
         with col2:
-            if st.button("🏺 Ramayana Quiz", key="rama", use_container_width=True):
+            if st.button("🏺 Ramayana Quiz", key="enhanced_rama", use_container_width=True):
                 start_enhanced_quiz("ramayana")
         
         # Show quiz interface if quiz is started
@@ -2364,11 +2363,11 @@ def show_classic_quiz_interface():
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("English", key="lang_en", use_container_width=True):
+        if st.button("English", key="classic_lang_en", use_container_width=True):
             st.session_state.selected_language = "english"
     
     with col2:
-        if st.button("తెలుగు (Telugu)", key="lang_te", use_container_width=True):
+        if st.button("తెలుగు (Telugu)", key="classic_lang_te", use_container_width=True):
             st.session_state.selected_language = "telugu"
     
     # Show selected language with proper spacing
@@ -2388,7 +2387,7 @@ def show_classic_quiz_interface():
     
     # User name input - Always in English interface
     st.subheader("👤 Enter Your Name")
-    user_name = st.text_input("Name:", placeholder="Enter your name here...")
+    user_name = st.text_input("Name:", placeholder="Enter your name here...", key="classic_user_name")
     
     if user_name:
         # Quiz selection - Interface always in English
@@ -2399,11 +2398,11 @@ def show_classic_quiz_interface():
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("🏹 Mahabharata Quiz", key="maha", use_container_width=True):
+            if st.button("🏹 Mahabharata Quiz", key="classic_maha", use_container_width=True):
                 start_classic_quiz("mahabharata", user_name)
         
         with col2:
-            if st.button("🏺 Ramayana Quiz", key="rama", use_container_width=True):
+            if st.button("🏺 Ramayana Quiz", key="classic_rama", use_container_width=True):
                 start_classic_quiz("ramayana", user_name)
         
         # Show quiz interface if quiz is started

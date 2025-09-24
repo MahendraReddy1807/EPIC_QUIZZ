@@ -18,7 +18,7 @@ def main():
         # Run the enhanced app
         subprocess.run([
             sys.executable, "-m", "streamlit", "run", 
-            "enhanced_quiz_app.py",
+            "app.py",
             "--server.port=8501",
             "--server.address=localhost"
         ], check=True)
